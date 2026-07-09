@@ -1,0 +1,27 @@
+---
+description: Flutter app UI language and Lotaya Dinga feature direction
+globs: lib/**
+alwaysApply: false
+---
+
+# Flutter App — English UI Only
+
+All user-facing strings in the Flutter app must be **English only**. No Myanmar/Burmese text in UI labels, buttons, messages, or dialogs.
+
+Chat with the user may be in Myanmar; the app UI is English.
+
+## Product reference
+
+Match **Lotaya Dinga** style and feature set over time:
+- Points balance, tiers, daily check-in
+- Quizzes / games to earn points
+- Classroom / education content (future)
+- Reward ads (AdMob, future)
+- Public ID for external redemption
+- No in-app cash withdraw UI (Play Store policy) — exchange website only
+
+## API config
+
+Production URLs via dart-define only:
+- `API_URL`
+- `EXCHANGE_URL`

@@ -25,6 +25,13 @@ class _AuthScreenState extends State<AuthScreen> {
   bool _isLogin = true;
   bool _loading = false;
   String? _error;
+  String? _loadingMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.api.wakeServer();
+  }
 
   @override
   void dispose() {
@@ -34,10 +41,23 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
+  void _setLoadingMessage(String message) {
+    if (mounted) setState(() => _loadingMessage = message);
+  }
+
   Future<void> _submit() async {
     setState(() {
       _loading = true;
       _error = null;
+      _loadingMessage = 'Connecting to server...';
+    });
+
+    final slowTimer = Future<void>.delayed(const Duration(seconds: 5), () {
+      if (_loading) {
+        _setLoadingMessage(
+          'Server is starting up. First request on free hosting can take up to 60 seconds...',
+        );
+      }
     });
 
     try {
@@ -60,11 +80,17 @@ class _AuthScreenState extends State<AuthScreen> {
       widget.api.setToken(token);
       widget.onLoggedIn();
     } on ApiException catch (e) {
-      setState(() => _error = e.error);
+      setState(() => _error = apiErrorMessage(e.error));
     } catch (_) {
-      setState(() => _error = 'NETWORK_ERROR');
+      setState(() => _error = apiErrorMessage('NETWORK_ERROR'));
     } finally {
-      if (mounted) setState(() => _loading = false);
+      await slowTimer;
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _loadingMessage = null;
+        });
+      }
     }
   }
 
@@ -89,21 +115,23 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                _isLogin ? 'အကောင့်ဝင်ပါ' : 'အကောင့်ဖွင့်ပါ',
+                _isLogin ? 'Sign in to your account' : 'Create an account',
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
               if (!_isLogin)
                 TextField(
                   controller: _nameController,
+                  enabled: !_loading,
                   decoration: const InputDecoration(
-                    labelText: 'အမည်',
+                    labelText: 'Name',
                     border: OutlineInputBorder(),
                   ),
                 ),
               if (!_isLogin) const SizedBox(height: 12),
               TextField(
                 controller: _emailController,
+                enabled: !_loading,
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
                   labelText: 'Email',
@@ -113,6 +141,7 @@ class _AuthScreenState extends State<AuthScreen> {
               const SizedBox(height: 12),
               TextField(
                 controller: _passwordController,
+                enabled: !_loading,
                 obscureText: true,
                 decoration: const InputDecoration(
                   labelText: 'Password',
@@ -125,6 +154,14 @@ class _AuthScreenState extends State<AuthScreen> {
                   _error!,
                   style: const TextStyle(color: Colors.red),
                   textAlign: TextAlign.center,
+                ),
+              ],
+              if (_loading && _loadingMessage != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _loadingMessage!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Color(0xFF6B5F4D)),
                 ),
               ],
               const SizedBox(height: 24),
@@ -140,7 +177,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Text(_isLogin ? 'ဝင်မယ်' : 'ဖွင့်မယ်'),
+                    : Text(_isLogin ? 'Sign In' : 'Sign Up'),
               ),
               TextButton(
                 onPressed: _loading
@@ -148,8 +185,8 @@ class _AuthScreenState extends State<AuthScreen> {
                     : () => setState(() => _isLogin = !_isLogin),
                 child: Text(
                   _isLogin
-                      ? 'အကောင့်မရှိသေးဘူး? ဖွင့်မယ်'
-                      : 'အကောင့်ရှိပြီးသား? ဝင်မယ်',
+                      ? "Don't have an account? Sign up"
+                      : 'Already have an account? Sign in',
                 ),
               ),
             ],

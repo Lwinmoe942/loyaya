@@ -1,0 +1,32 @@
+---
+description: Lotaya Shwe Oh production hosting target and architecture
+alwaysApply: true
+---
+
+# Lotaya Shwe Oh — Production Target
+
+**Primary production hosting: Z.com Private Hosting** (Ubuntu + Nginx + PHP + MySQL on one server).
+
+Render is **temporary testing only** — never design features or architecture around Render limitations.
+
+## Stack (final)
+
+| Component | Location |
+|-----------|----------|
+| Flutter app | Play Store — points/rewards only, no in-app cash withdraw UI |
+| Laravel API | Z.com — `api-laravel/` |
+| Exchange website | Same Laravel app — `/exchange` |
+| Admin panel | Same Laravel app — `/admin` |
+| MySQL | Z.com local MySQL (`127.0.0.1`) — always on |
+
+## When switching hosts
+
+Only change:
+- Server `.env` (`APP_URL`, `EXCHANGE_URL`, `DB_*`)
+- Flutter `--dart-define=API_URL=...` and `EXCHANGE_URL=...`
+
+Do **not** rewrite Flutter or Laravel business logic.
+
+## Deploy reference
+
+See `deploy/zcom/README.md` for the canonical production deploy guide.
