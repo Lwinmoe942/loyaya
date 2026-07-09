@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-PORT="${PORT:-10000}"
+PORT="${PORT:-8080}"
 
 trim() {
   printf '%s' "$1" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
@@ -38,16 +38,20 @@ if [ -z "${DB_HOST:-}" ]; then
   exit 1
 fi
 
+# Start HTTP server first so Railway healthcheck can reach /health while migrations run.
+php artisan serve --host=0.0.0.0 --port="${PORT}" &
+SERVER_PID=$!
+
 attempt=1
 max_attempts=15
 while [ "$attempt" -le "$max_attempts" ]; do
   if php artisan migrate --force --no-interaction; then
+    echo "Migrations complete."
     break
   fi
   if [ "$attempt" -eq "$max_attempts" ]; then
     echo "ERROR: Database migration failed after ${max_attempts} attempts."
-    echo "Check Aiven: service running, DB_HOST/DB_PORT/DB_USERNAME/DB_PASSWORD correct."
-    echo "Aiven port is usually NOT 3306 (e.g. 12046)."
+    kill "$SERVER_PID" 2>/dev/null || true
     exit 1
   fi
   echo "Database not ready, retry ${attempt}/${max_attempts}..."
@@ -55,4 +59,4 @@ while [ "$attempt" -le "$max_attempts" ]; do
   sleep 4
 done
 
-exec php artisan serve --host=0.0.0.0 --port="${PORT}"
+wait "$SERVER_PID"

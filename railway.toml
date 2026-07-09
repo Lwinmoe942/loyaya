@@ -1,0 +1,14 @@
+# Monorepo: Laravel API lives in api-laravel/
+# In Railway UI set Service → Settings → Root Directory = api-laravel
+#
+# If Railway builds from repo root by mistake, it sees Flutter (pubspec.yaml)
+# and fails "Build image" in ~1 second.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "api-laravel/Dockerfile"
+watchPatterns = ["api-laravel/**"]
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 300
