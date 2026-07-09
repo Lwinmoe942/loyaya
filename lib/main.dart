@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:loyaya/screens/auth_screen.dart';
-import 'package:loyaya/screens/home_screen.dart';
+import 'package:loyaya/screens/shell_screen.dart';
 import 'package:loyaya/services/api_client.dart';
+import 'package:loyaya/services/progress_service.dart';
 import 'package:loyaya/services/session_service.dart';
+import 'package:loyaya/theme/app_theme.dart';
 
 void main() {
   runApp(const LotayaShweOhApp());
@@ -16,13 +18,7 @@ class LotayaShweOhApp extends StatelessWidget {
     return MaterialApp(
       title: 'Lotaya Shwe Oh',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFFD4A017),
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light,
       home: const AppRoot(),
     );
   }
@@ -38,6 +34,7 @@ class AppRoot extends StatefulWidget {
 class _AppRootState extends State<AppRoot> {
   final _api = ApiClient();
   final _session = SessionService();
+  final _progress = ProgressService();
   bool _ready = false;
   bool _loggedIn = false;
   String? _bootMessage;
@@ -61,9 +58,18 @@ class _AppRootState extends State<AppRoot> {
       try {
         await _api.me();
         _loggedIn = true;
+        await _syncProgress();
+      } on ApiException catch (e) {
+        if (e.statusCode == 401) {
+          await _session.clear();
+          _api.setToken(null);
+        } else {
+          // Keep session on temporary server errors.
+          _loggedIn = true;
+        }
       } catch (_) {
-        await _session.clear();
-        _api.setToken(null);
+        // Keep session when offline or server is waking up.
+        _loggedIn = true;
       }
     }
     if (mounted) {
@@ -74,7 +80,19 @@ class _AppRootState extends State<AppRoot> {
     }
   }
 
-  void _onLoggedIn() => setState(() => _loggedIn = true);
+  Future<void> _syncProgress() async {
+    try {
+      final history = await _api.history();
+      await _progress.syncFromHistory(history);
+    } catch (_) {
+      // Non-blocking.
+    }
+  }
+
+  void _onLoggedIn() {
+    setState(() => _loggedIn = true);
+    _syncProgress();
+  }
 
   void _onLogout() => setState(() => _loggedIn = false);
 
@@ -82,11 +100,12 @@ class _AppRootState extends State<AppRoot> {
   Widget build(BuildContext context) {
     if (!_ready) {
       return Scaffold(
+        backgroundColor: AppColors.background,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(),
+              const CircularProgressIndicator(color: AppColors.primary),
               if (_bootMessage != null) ...[
                 const SizedBox(height: 16),
                 Padding(
@@ -94,7 +113,7 @@ class _AppRootState extends State<AppRoot> {
                   child: Text(
                     _bootMessage!,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Color(0xFF6B5F4D)),
+                    style: const TextStyle(color: AppColors.textSecondary),
                   ),
                 ),
               ],
@@ -112,9 +131,10 @@ class _AppRootState extends State<AppRoot> {
       );
     }
 
-    return HomeScreen(
+    return ShellScreen(
       api: _api,
       session: _session,
+      progress: _progress,
       onLogout: _onLogout,
     );
   }

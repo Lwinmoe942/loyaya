@@ -103,13 +103,10 @@ class ApiClient {
     return earn(action: 'daily_checkin');
   }
 
-  Future<Map<String, dynamic>> earnMathQuiz() async {
-    return earn(action: 'math_quiz');
-  }
-
   Future<Map<String, dynamic>> earn({
     required String action,
     String? idempotentKey,
+    String? contentId,
   }) async {
     final res = await _post(
       Uri.parse('${ApiConfig.baseUrl}/api/points/earn'),
@@ -117,9 +114,26 @@ class ApiClient {
       body: jsonEncode({
         'action': action,
         if (idempotentKey != null) 'idempotent_key': idempotentKey,
+        if (contentId != null) 'content_id': contentId,
       }),
     );
     return _parse(res);
+  }
+
+  Future<Map<String, dynamic>> earnMathQuiz(String quizId) async {
+    return earn(
+      action: 'math_quiz',
+      idempotentKey: 'math_quiz_$quizId',
+      contentId: quizId,
+    );
+  }
+
+  Future<Map<String, dynamic>> earnSurvey(String surveyId) async {
+    return earn(
+      action: 'survey',
+      idempotentKey: 'survey_$surveyId',
+      contentId: surveyId,
+    );
   }
 
   Future<T> _withRetry<T>(Future<T> Function() action) async {
@@ -176,11 +190,24 @@ class ApiClient {
 
   Map<String, dynamic> _parse(http.Response res) {
     final body = res.body.isEmpty ? '{}' : res.body;
-    final data = jsonDecode(body) as Map<String, dynamic>;
-    if (res.statusCode >= 400) {
+    Map<String, dynamic> data;
+    try {
+      data = jsonDecode(body) as Map<String, dynamic>;
+    } catch (_) {
       throw ApiException(
         statusCode: res.statusCode,
-        error: data['error']?.toString() ?? 'REQUEST_FAILED',
+        error: res.statusCode == 404
+            ? 'API_NOT_FOUND_CHECK_URL'
+            : 'REQUEST_FAILED',
+      );
+    }
+    if (res.statusCode >= 400) {
+      final message = data['error'] ??
+          data['message'] ??
+          (res.statusCode == 404 ? 'API_NOT_FOUND_CHECK_URL' : 'REQUEST_FAILED');
+      throw ApiException(
+        statusCode: res.statusCode,
+        error: message.toString(),
       );
     }
     return data;
@@ -210,6 +237,8 @@ String apiErrorMessage(String error) {
     'EMAIL_EXISTS' => 'This email is already registered.',
     'INVALID_CREDENTIALS' => 'Invalid email or password.',
     'VALIDATION_ERROR' => 'Please check your input and try again.',
+    'API_NOT_FOUND_CHECK_URL' =>
+      'API URL is wrong. Copy the exact domain from Railway → lotaya-shwe-oh → Settings → Networking.',
     _ => error,
   };
 }

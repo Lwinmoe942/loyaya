@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/services/session_service.dart';
+import 'package:loyaya/theme/app_theme.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({
@@ -55,7 +56,7 @@ class _AuthScreenState extends State<AuthScreen> {
     final slowTimer = Future<void>.delayed(const Duration(seconds: 5), () {
       if (_loading) {
         _setLoadingMessage(
-          'Server is starting up. First request on free hosting can take up to 60 seconds...',
+          'Server is starting up. First request can take up to 60 seconds...',
         );
       }
     });
@@ -76,7 +77,9 @@ class _AuthScreenState extends State<AuthScreen> {
       }
 
       final token = result['token'] as String;
+      final user = result['user'] as Map<String, dynamic>;
       await widget.session.saveToken(token);
+      await widget.session.saveUser(user);
       widget.api.setToken(token);
       widget.onLoggedIn();
     } on ApiException catch (e) {
@@ -97,7 +100,7 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8E7),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -105,11 +108,27 @@ class _AuthScreenState extends State<AuthScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 24),
+              Center(
+                child: Container(
+                  width: 72,
+                  height: 72,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.monetization_on,
+                    color: Colors.white,
+                    size: 36,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               Text(
                 'Lotaya Shwe Oh',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      color: const Color(0xFFB8860B),
+                      color: AppColors.primary,
                       fontWeight: FontWeight.bold,
                     ),
               ),
@@ -117,6 +136,7 @@ class _AuthScreenState extends State<AuthScreen> {
               Text(
                 _isLogin ? 'Sign in to your account' : 'Create an account',
                 textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 32),
               if (!_isLogin)
@@ -126,6 +146,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Name',
                     border: OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Colors.white,
                   ),
                 ),
               if (!_isLogin) const SizedBox(height: 12),
@@ -136,6 +158,8 @@ class _AuthScreenState extends State<AuthScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Email',
                   border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
               ),
               const SizedBox(height: 12),
@@ -146,13 +170,15 @@ class _AuthScreenState extends State<AuthScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Password',
                   border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
                 ),
               ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
                 Text(
                   _error!,
-                  style: const TextStyle(color: Colors.red),
+                  style: const TextStyle(color: AppColors.primary),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -161,21 +187,23 @@ class _AuthScreenState extends State<AuthScreen> {
                 Text(
                   _loadingMessage!,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Color(0xFF6B5F4D)),
+                  style: const TextStyle(color: AppColors.textSecondary),
                 ),
               ],
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: _loading ? null : _submit,
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFB8860B),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 child: _loading
                     ? const SizedBox(
                         height: 20,
                         width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : Text(_isLogin ? 'Sign In' : 'Sign Up'),
               ),
@@ -187,6 +215,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   _isLogin
                       ? "Don't have an account? Sign up"
                       : 'Already have an account? Sign in',
+                  style: const TextStyle(color: AppColors.primary),
                 ),
               ),
             ],

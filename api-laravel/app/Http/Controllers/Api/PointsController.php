@@ -43,6 +43,7 @@ class PointsController extends Controller
         $data = $request->validate([
             'action' => ['required', 'string'],
             'idempotent_key' => ['nullable', 'string', 'max:120'],
+            'content_id' => ['nullable', 'string', 'max:80'],
         ]);
 
         $user = $request->attributes->get('auth_user');
@@ -52,6 +53,7 @@ class PointsController extends Controller
                 $user->id,
                 $data['action'],
                 $data['idempotent_key'] ?? null,
+                $data['content_id'] ?? null,
             );
         } catch (\RuntimeException $e) {
             $map = [

@@ -40,8 +40,12 @@ class PointService
         return $tier;
     }
 
-    public function earnPoints(int $userId, string $action, ?string $idempotentKey = null): array
-    {
+    public function earnPoints(
+        int $userId,
+        string $action,
+        ?string $idempotentKey = null,
+        ?string $contentId = null,
+    ): array {
         $rules = config('lotaya.earn_rules', []);
         $rule = $rules[$action] ?? null;
 
@@ -56,7 +60,15 @@ class PointService
             $key = "earn_{$action}_{$userId}_".now()->timestamp;
         }
 
-        $result = $this->addTransaction($userId, (int) $rule['points'], "earn_{$action}", $action, $key);
+        $referenceId = $contentId ?? $action;
+
+        $result = $this->addTransaction(
+            $userId,
+            (int) $rule['points'],
+            "earn_{$action}",
+            $referenceId,
+            $key,
+        );
 
         if ($result['duplicate'] && ! empty($rule['daily'])) {
             throw new \RuntimeException('ALREADY_CLAIMED_TODAY');
