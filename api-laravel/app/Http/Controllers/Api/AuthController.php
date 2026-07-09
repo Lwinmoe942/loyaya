@@ -27,9 +27,16 @@ class AuthController extends Controller
             'phone' => ['nullable', 'string', 'max:30'],
         ]);
 
-        $email = strtolower($data['email']);
-        if (User::query()->where('email', $email)->exists()) {
-            return response()->json(['error' => 'EMAIL_EXISTS'], 409);
+        $email = strtolower(trim($data['email']));
+        if ($email === '') {
+            return response()->json(['error' => 'VALIDATION_ERROR'], 422);
+        }
+
+        if (User::query()->whereRaw('LOWER(email) = ?', [$email])->exists()) {
+            return response()->json([
+                'error' => 'EMAIL_EXISTS',
+                'message' => 'This email already has an account. Please sign in.',
+            ], 409);
         }
 
         $token = PublicId::token();
@@ -56,7 +63,8 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        $user = User::query()->where('email', strtolower($data['email']))->first();
+        $email = strtolower(trim($data['email']));
+        $user = User::query()->whereRaw('LOWER(email) = ?', [$email])->first();
         if (! $user || ! Hash::check($data['password'], $user->password)) {
             return response()->json(['error' => 'INVALID_CREDENTIALS'], 401);
         }

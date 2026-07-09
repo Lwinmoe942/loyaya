@@ -19,6 +19,7 @@ class _MathQuizListScreenState extends State<MathQuizListScreen> {
   final _progress = ProgressService();
   List<MathQuizItem> _quizzes = [];
   Set<String> _completed = {};
+  Set<String> _locked = {};
   bool _loading = true;
 
   @override
@@ -28,27 +29,41 @@ class _MathQuizListScreenState extends State<MathQuizListScreen> {
   }
 
   Future<void> _load() async {
+    setState(() => _loading = true);
+    try {
+      await _progress.syncLocksFromApi(widget.api);
+    } catch (_) {
+      // Use cached locks if server is unavailable.
+    }
     final quizzes = await ContentRepository.instance.mathQuizzes();
     final completed = await _progress.completedMathIds();
+    final locked = await _progress.lockedMathIds();
     if (mounted) {
       setState(() {
         _quizzes = quizzes;
         _completed = completed;
+        _locked = locked;
         _loading = false;
       });
     }
   }
 
   Future<void> _openQuiz(MathQuizItem quiz) async {
+    if (_completed.contains(quiz.id) || _locked.contains(quiz.id)) return;
+
     final passed = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) => MathQuizScreen(api: widget.api, quiz: quiz),
+        builder: (_) => MathQuizScreen(
+          api: widget.api,
+          quiz: quiz,
+          initiallyLocked: _locked.contains(quiz.id),
+        ),
       ),
     );
     if (passed == true) {
       await _progress.markMathCompleted(quiz.id);
-      await _load();
     }
+    await _load();
   }
 
   @override
@@ -61,7 +76,8 @@ class _MathQuizListScreenState extends State<MathQuizListScreen> {
           children: [
             DingaPageHeader(
               title: 'Math Quiz',
-              subtitle: 'Solve correctly and earn points. ${_quizzes.length} quizzes available.',
+              subtitle:
+                  'Solve correctly and earn points. Wrong once = try again tomorrow. ${_quizzes.length} quizzes.',
               onBack: () => Navigator.pop(context),
             ),
             Expanded(
@@ -73,6 +89,7 @@ class _MathQuizListScreenState extends State<MathQuizListScreen> {
                       itemBuilder: (context, index) {
                         final quiz = _quizzes[index];
                         final done = _completed.contains(quiz.id);
+                        final locked = _locked.contains(quiz.id);
                         return Card(
                           margin: const EdgeInsets.only(bottom: 12),
                           child: Padding(
@@ -110,16 +127,24 @@ class _MathQuizListScreenState extends State<MathQuizListScreen> {
                                       decoration: BoxDecoration(
                                         color: done
                                             ? const Color(0xFFE8F5E9)
-                                            : Colors.grey.shade200,
+                                            : locked
+                                                ? const Color(0xFFFFEBEE)
+                                                : Colors.grey.shade200,
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Text(
-                                        done ? 'Passed' : 'New',
+                                        done
+                                            ? 'Passed'
+                                            : locked
+                                                ? 'Locked'
+                                                : 'New',
                                         style: TextStyle(
                                           fontSize: 12,
                                           color: done
                                               ? AppColors.accentGreen
-                                              : AppColors.textSecondary,
+                                              : locked
+                                                  ? AppColors.primary
+                                                  : AppColors.textSecondary,
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -134,11 +159,22 @@ class _MathQuizListScreenState extends State<MathQuizListScreen> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
+                                if (locked && !done) ...[
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'Wrong today. Try again tomorrow.',
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
                                 const SizedBox(height: 12),
                                 SizedBox(
                                   width: double.infinity,
                                   child: FilledButton(
-                                    onPressed: done
+                                    onPressed: done || locked
                                         ? null
                                         : () => _openQuiz(quiz),
                                     style: FilledButton.styleFrom(
@@ -149,7 +185,13 @@ class _MathQuizListScreenState extends State<MathQuizListScreen> {
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                     ),
-                                    child: Text(done ? 'Completed' : 'Solve Now'),
+                                    child: Text(
+                                      done
+                                          ? 'Completed'
+                                          : locked
+                                              ? 'Try Tomorrow'
+                                              : 'Solve Now',
+                                    ),
                                   ),
                                 ),
                               ],

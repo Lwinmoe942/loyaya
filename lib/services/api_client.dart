@@ -136,6 +136,31 @@ class ApiClient {
     );
   }
 
+  Future<List<Map<String, dynamic>>> contentLocks() async {
+    final res = await _get(
+      Uri.parse('${ApiConfig.baseUrl}/api/content/locks'),
+      headers: _headers,
+    );
+    final data = _parse(res);
+    final list = data['locks'] as List<dynamic>? ?? [];
+    return list.cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> recordContentFail({
+    required String contentType,
+    required String contentId,
+  }) async {
+    final res = await _post(
+      Uri.parse('${ApiConfig.baseUrl}/api/content/fail'),
+      headers: _headers,
+      body: jsonEncode({
+        'content_type': contentType,
+        'content_id': contentId,
+      }),
+    );
+    return _parse(res);
+  }
+
   Future<T> _withRetry<T>(Future<T> Function() action) async {
     Object? lastError;
     for (var attempt = 0; attempt < 2; attempt++) {
@@ -234,7 +259,9 @@ String apiErrorMessage(String error) {
     'NETWORK_ERROR' => isRenderHost
         ? 'Cannot reach the server. Check your internet connection and try again.'
         : 'Network error. Use your PC Wi-Fi IP in API_URL (e.g. http://192.168.x.x:8000), not 10.0.2.2 on a real phone.',
-    'EMAIL_EXISTS' => 'This email is already registered.',
+    'EMAIL_EXISTS' => 'This email already has an account. Please sign in.',
+    'LOCKED_TRY_TOMORROW' =>
+      'You answered wrong today. Please try again tomorrow.',
     'INVALID_CREDENTIALS' => 'Invalid email or password.',
     'VALIDATION_ERROR' => 'Please check your input and try again.',
     'API_NOT_FOUND_CHECK_URL' =>

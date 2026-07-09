@@ -84,6 +84,7 @@ class _AppRootState extends State<AppRoot> {
     try {
       final history = await _api.history();
       await _progress.syncFromHistory(history);
+      await _progress.syncLocksFromApi(_api);
     } catch (_) {
       // Non-blocking.
     }

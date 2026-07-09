@@ -59,6 +59,7 @@ class PointsController extends Controller
             $map = [
                 'INVALID_ACTION' => 400,
                 'ALREADY_CLAIMED_TODAY' => 409,
+                'LOCKED_TRY_TOMORROW' => 423,
             ];
 
             return response()->json(

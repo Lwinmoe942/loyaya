@@ -65,13 +65,13 @@ class _AuthScreenState extends State<AuthScreen> {
       final Map<String, dynamic> result;
       if (_isLogin) {
         result = await widget.api.login(
-          email: _emailController.text.trim(),
+          email: _emailController.text.trim().toLowerCase(),
           password: _passwordController.text,
         );
       } else {
         result = await widget.api.register(
           name: _nameController.text.trim(),
-          email: _emailController.text.trim(),
+          email: _emailController.text.trim().toLowerCase(),
           password: _passwordController.text,
         );
       }

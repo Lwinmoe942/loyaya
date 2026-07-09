@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AdminWithdrawController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ContentController;
 use App\Http\Controllers\Api\PointsController;
 use App\Http\Controllers\Api\WithdrawController;
 use Illuminate\Support\Facades\Route;
@@ -14,6 +15,8 @@ Route::middleware('api.token')->group(function () {
     Route::get('/points/balance', [PointsController::class, 'balance']);
     Route::get('/points/history', [PointsController::class, 'history']);
     Route::post('/points/earn', [PointsController::class, 'earn']);
+    Route::get('/content/locks', [ContentController::class, 'locks']);
+    Route::post('/content/fail', [ContentController::class, 'fail']);
 });
 
 Route::post('/withdraw/request', [WithdrawController::class, 'request']);

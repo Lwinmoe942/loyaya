@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/services/content_repository.dart';
+import 'package:loyaya/services/progress_service.dart';
 import 'package:loyaya/theme/app_theme.dart';
 import 'package:loyaya/widgets/dinga_page_header.dart';
 
@@ -8,27 +9,60 @@ class SurveyDetailScreen extends StatefulWidget {
   const SurveyDetailScreen({
     super.key,
     required this.survey,
-    this.api,
+    required this.api,
+    this.initiallyLocked = false,
   });
 
   final SurveyItem survey;
-  final ApiClient? api;
+  final ApiClient api;
+  final bool initiallyLocked;
 
   @override
   State<SurveyDetailScreen> createState() => _SurveyDetailScreenState();
 }
 
 class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
+  final _progress = ProgressService();
   final Map<int, int?> _answers = {};
   bool _submitting = false;
+  bool _locked = false;
   String? _message;
   bool _passed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _locked = widget.initiallyLocked;
+    if (_locked) {
+      _message = apiErrorMessage('LOCKED_TRY_TOMORROW');
+    }
+  }
 
   bool get _allAnswered =>
       _answers.length == widget.survey.questions.length &&
       _answers.values.every((v) => v != null);
 
+  Future<void> _lockSurvey() async {
+    try {
+      await widget.api.recordContentFail(
+        contentType: 'survey',
+        contentId: widget.survey.id,
+      );
+      await _progress.markSurveyLocked(widget.survey.id);
+    } catch (_) {
+      await _progress.markSurveyLocked(widget.survey.id);
+    }
+    if (mounted) {
+      setState(() {
+        _locked = true;
+        _message = apiErrorMessage('LOCKED_TRY_TOMORROW');
+      });
+    }
+  }
+
   Future<void> _submit() async {
+    if (_locked || _passed) return;
+
     if (!_allAnswered) {
       setState(() => _message = 'Please answer all questions');
       return;
@@ -36,17 +70,9 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
 
     for (var i = 0; i < widget.survey.questions.length; i++) {
       if (_answers[i] != widget.survey.questions[i].correct) {
-        setState(() {
-          _message = 'Some answers are wrong. Please review and try again.';
-          _passed = false;
-        });
+        await _lockSurvey();
         return;
       }
-    }
-
-    if (widget.api == null) {
-      setState(() => _message = 'Sign in required to earn points');
-      return;
     }
 
     setState(() {
@@ -55,7 +81,7 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
     });
 
     try {
-      final result = await widget.api!.earnSurvey(widget.survey.id);
+      final result = await widget.api.earnSurvey(widget.survey.id);
       setState(() {
         _passed = true;
         _message = result['duplicate'] == true
@@ -67,9 +93,12 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
         if (mounted) Navigator.pop(context, true);
       }
     } on ApiException catch (e) {
-      setState(() => _message = e.error);
+      setState(() {
+        _message = apiErrorMessage(e.error);
+        if (e.error == 'LOCKED_TRY_TOMORROW') _locked = true;
+      });
     } catch (_) {
-      setState(() => _message = 'NETWORK_ERROR');
+      setState(() => _message = apiErrorMessage('NETWORK_ERROR'));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -84,7 +113,8 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
           children: [
             DingaPageHeader(
               title: 'Survey',
-              subtitle: 'Answer all 3 questions correctly to earn points.',
+              subtitle:
+                  'Answer all 3 questions correctly. One wrong = try again tomorrow.',
               onBack: () => Navigator.pop(context),
               titleColor: const Color(0xFFE57373),
             ),
@@ -133,19 +163,25 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
                             widget.survey.description,
                             style: const TextStyle(color: AppColors.textSecondary),
                           ),
-                          if (_passed) ...[
+                          if (_passed || _locked) ...[
                             const SizedBox(height: 12),
                             Container(
                               width: double.infinity,
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFFF3E0),
+                                color: _passed
+                                    ? const Color(0xFFFFF3E0)
+                                    : const Color(0xFFFFEBEE),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Text(
-                                'You already passed this survey',
+                              child: Text(
+                                _passed
+                                    ? 'You already passed this survey'
+                                    : 'Wrong today. Try again tomorrow.',
                                 style: TextStyle(
-                                  color: Color(0xFFE65100),
+                                  color: _passed
+                                      ? const Color(0xFFE65100)
+                                      : AppColors.primary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -161,6 +197,7 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
                       index: i,
                       question: widget.survey.questions[i],
                       selected: _answers[i],
+                      enabled: !_locked && !_passed && !_submitting,
                       onSelect: (value) => setState(() => _answers[i] = value),
                     ),
                   if (_message != null) ...[
@@ -178,7 +215,7 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
                   ],
                   const SizedBox(height: 12),
                   FilledButton(
-                    onPressed: _submitting || _passed ? null : _submit,
+                    onPressed: _submitting || _passed || _locked ? null : _submit,
                     style: FilledButton.styleFrom(
                       backgroundColor: const Color(0xFFE57373),
                     ),
@@ -191,7 +228,9 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text('Submit Answers'),
+                        : Text(
+                            _locked ? 'Try Again Tomorrow' : 'Submit Answers',
+                          ),
                   ),
                 ],
               ),
@@ -208,12 +247,14 @@ class _QuestionCard extends StatelessWidget {
     required this.index,
     required this.question,
     required this.selected,
+    required this.enabled,
     required this.onSelect,
   });
 
   final int index;
   final SurveyQuestion question;
   final int? selected;
+  final bool enabled;
   final ValueChanged<int> onSelect;
 
   @override
@@ -246,7 +287,7 @@ class _QuestionCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: OutlinedButton(
-                  onPressed: () => onSelect(i),
+                  onPressed: enabled ? () => onSelect(i) : null,
                   style: OutlinedButton.styleFrom(
                     alignment: Alignment.centerLeft,
                     backgroundColor: selected == i

@@ -61,6 +61,7 @@ class ShellScreenState extends State<ShellScreen> {
       final user = me['user'] as Map<String, dynamic>;
       await widget.session.saveUser(user);
       await widget.progress.syncFromHistory(history);
+      await widget.progress.syncLocksFromApi(widget.api);
       if (mounted) {
         setState(() {
           _user = user;

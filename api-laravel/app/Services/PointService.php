@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class PointService
 {
+    public function __construct(private readonly ContentLockService $contentLocks) {}
     public function getBalance(int $userId): int
     {
         return (int) PointTransaction::query()
@@ -51,6 +52,12 @@ class PointService
 
         if (! $rule) {
             throw new \RuntimeException('INVALID_ACTION');
+        }
+
+        if ($contentId && in_array($action, ContentLockService::LOCKABLE_TYPES, true)) {
+            if ($this->contentLocks->isLocked($userId, $action, $contentId)) {
+                throw new \RuntimeException('LOCKED_TRY_TOMORROW');
+            }
         }
 
         $key = $idempotentKey;

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/services/content_repository.dart';
+import 'package:loyaya/services/progress_service.dart';
 import 'package:loyaya/theme/app_theme.dart';
 import 'package:loyaya/widgets/dinga_page_header.dart';
 
@@ -9,10 +10,12 @@ class MathQuizScreen extends StatefulWidget {
     super.key,
     required this.api,
     required this.quiz,
+    this.initiallyLocked = false,
   });
 
   final ApiClient api;
   final MathQuizItem quiz;
+  final bool initiallyLocked;
 
   @override
   State<MathQuizScreen> createState() => _MathQuizScreenState();
@@ -20,9 +23,20 @@ class MathQuizScreen extends StatefulWidget {
 
 class _MathQuizScreenState extends State<MathQuizScreen> {
   final _answerController = TextEditingController();
+  final _progress = ProgressService();
   bool _loading = false;
+  bool _locked = false;
   String? _message;
   bool? _correct;
+
+  @override
+  void initState() {
+    super.initState();
+    _locked = widget.initiallyLocked;
+    if (_locked) {
+      _message = apiErrorMessage('LOCKED_TRY_TOMORROW');
+    }
+  }
 
   @override
   void dispose() {
@@ -30,7 +44,28 @@ class _MathQuizScreenState extends State<MathQuizScreen> {
     super.dispose();
   }
 
+  Future<void> _lockQuiz() async {
+    try {
+      await widget.api.recordContentFail(
+        contentType: 'math_quiz',
+        contentId: widget.quiz.id,
+      );
+      await _progress.markMathLocked(widget.quiz.id);
+    } catch (_) {
+      await _progress.markMathLocked(widget.quiz.id);
+    }
+    if (mounted) {
+      setState(() {
+        _locked = true;
+        _correct = false;
+        _message = apiErrorMessage('LOCKED_TRY_TOMORROW');
+      });
+    }
+  }
+
   Future<void> _submit() async {
+    if (_locked) return;
+
     final answer = int.tryParse(_answerController.text.trim());
     if (answer == null) {
       setState(() => _message = 'Enter a number');
@@ -38,10 +73,7 @@ class _MathQuizScreenState extends State<MathQuizScreen> {
     }
 
     if (answer != widget.quiz.answer) {
-      setState(() {
-        _correct = false;
-        _message = 'Wrong answer — try again';
-      });
+      await _lockQuiz();
       return;
     }
 
@@ -63,9 +95,12 @@ class _MathQuizScreenState extends State<MathQuizScreen> {
         if (mounted) Navigator.pop(context, true);
       }
     } on ApiException catch (e) {
-      setState(() => _message = e.error);
+      setState(() => _message = apiErrorMessage(e.error));
+      if (e.error == 'LOCKED_TRY_TOMORROW') {
+        setState(() => _locked = true);
+      }
     } catch (_) {
-      setState(() => _message = 'NETWORK_ERROR');
+      setState(() => _message = apiErrorMessage('NETWORK_ERROR'));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -102,6 +137,7 @@ class _MathQuizScreenState extends State<MathQuizScreen> {
                       const SizedBox(height: 16),
                       TextField(
                         controller: _answerController,
+                        enabled: !_locked && !_loading,
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(
                           labelText: 'Your answer',
@@ -114,7 +150,7 @@ class _MathQuizScreenState extends State<MathQuizScreen> {
               ),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: _loading ? null : _submit,
+                onPressed: _loading || _locked ? null : _submit,
                 child: _loading
                     ? const SizedBox(
                         height: 22,
@@ -124,7 +160,7 @@ class _MathQuizScreenState extends State<MathQuizScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : Text('Submit (+${widget.quiz.points} pts)'),
+                    : Text(_locked ? 'Try Again Tomorrow' : 'Submit (+${widget.quiz.points} pts)'),
               ),
               if (_message != null) ...[
                 const SizedBox(height: 16),
