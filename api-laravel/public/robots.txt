@@ -1,2 +1,6 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /api/
+Disallow: /admin
+
+Sitemap: https://lotaya-shwe-oh-production-d73b.up.railway.app/sitemap.xml
