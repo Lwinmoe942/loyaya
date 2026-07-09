@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.token' => \App\Http\Middleware\ApiTokenAuth::class,
             'admin.key' => \App\Http\Middleware\AdminApiKey::class,
             'admin.session' => \App\Http\Middleware\AdminSession::class,
+            'admin.access' => \App\Http\Middleware\AdminAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

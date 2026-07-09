@@ -22,7 +22,7 @@ Route::middleware('api.token')->group(function () {
 Route::post('/withdraw/request', [WithdrawController::class, 'request']);
 Route::get('/withdraw/status', [WithdrawController::class, 'status']);
 
-Route::middleware('admin.key')->prefix('admin')->group(function () {
+Route::middleware(['admin.access', 'admin.key'])->prefix('admin')->group(function () {
     Route::get('/withdraws', [AdminWithdrawController::class, 'index']);
     Route::post('/withdraws/{id}/approve', [AdminWithdrawController::class, 'approve']);
     Route::post('/withdraws/{id}/reject', [AdminWithdrawController::class, 'reject']);

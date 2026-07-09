@@ -17,12 +17,18 @@ Route::post('/exchange', [ExchangeController::class, 'submit'])->name('exchange.
 Route::get('/exchange/status', [ExchangeController::class, 'statusForm'])->name('exchange.status.form');
 Route::post('/exchange/status', [ExchangeController::class, 'statusCheck'])->name('exchange.status.check');
 
-Route::get('/admin', [AdminPanelController::class, 'loginForm'])->name('admin.login');
-Route::post('/admin/login', [AdminPanelController::class, 'login'])->name('admin.login.submit');
-Route::post('/admin/logout', [AdminPanelController::class, 'logout'])->name('admin.logout');
+$adminPath = trim((string) config('lotaya.admin_panel_path', 'admin'), '/');
 
-Route::middleware('admin.session')->prefix('admin')->group(function () {
-    Route::get('/withdraws', [AdminPanelController::class, 'withdraws'])->name('admin.withdraws');
-    Route::post('/withdraws/{id}/approve', [AdminPanelController::class, 'approve'])->name('admin.withdraws.approve');
-    Route::post('/withdraws/{id}/reject', [AdminPanelController::class, 'reject'])->name('admin.withdraws.reject');
+Route::middleware('admin.access')->prefix($adminPath)->name('admin.')->group(function () {
+    Route::get('/', [AdminPanelController::class, 'loginForm'])->name('login');
+    Route::post('/login', [AdminPanelController::class, 'login'])
+        ->middleware('throttle:5,1')
+        ->name('login.submit');
+    Route::post('/logout', [AdminPanelController::class, 'logout'])->name('logout');
+
+    Route::middleware('admin.session')->group(function () {
+        Route::get('/withdraws', [AdminPanelController::class, 'withdraws'])->name('withdraws');
+        Route::post('/withdraws/{id}/approve', [AdminPanelController::class, 'approve'])->name('withdraws.approve');
+        Route::post('/withdraws/{id}/reject', [AdminPanelController::class, 'reject'])->name('withdraws.reject');
+    });
 });

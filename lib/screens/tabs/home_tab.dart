@@ -18,7 +18,6 @@ class HomeTab extends StatefulWidget {
     required this.balance,
     required this.tier,
     required this.rate,
-    required this.publicId,
     required this.loading,
     required this.onRefresh,
   });
@@ -27,7 +26,6 @@ class HomeTab extends StatefulWidget {
   final int balance;
   final String tier;
   final int rate;
-  final String publicId;
   final bool loading;
   final Future<void> Function() onRefresh;
 
@@ -174,7 +172,7 @@ class _HomeTabState extends State<HomeTab> {
                   label: 'Redeem',
                   icon: Icons.card_giftcard,
                   color: const Color(0xFF81C784),
-                  onTap: () => _open(RedeemGiftScreen(publicId: widget.publicId)),
+                  onTap: () => _open(const RedeemGiftScreen()),
                 ),
                 EarnGridItem(
                   label: 'Survey',

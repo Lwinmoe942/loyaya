@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:loyaya/config/api_config.dart';
 import 'package:loyaya/theme/app_theme.dart';
 import 'package:loyaya/widgets/coming_soon_dialog.dart';
 import 'package:loyaya/widgets/dinga_page_header.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class RedeemGiftScreen extends StatefulWidget {
-  const RedeemGiftScreen({super.key, required this.publicId});
-
-  final String publicId;
+  const RedeemGiftScreen({super.key});
 
   @override
   State<RedeemGiftScreen> createState() => _RedeemGiftScreenState();
@@ -17,7 +12,6 @@ class RedeemGiftScreen extends StatefulWidget {
 
 class _RedeemGiftScreenState extends State<RedeemGiftScreen> {
   final _codeController = TextEditingController();
-  String? _message;
 
   @override
   void dispose() {
@@ -25,17 +19,7 @@ class _RedeemGiftScreenState extends State<RedeemGiftScreen> {
     super.dispose();
   }
 
-  Future<void> _copyId() async {
-    await Clipboard.setData(ClipboardData(text: widget.publicId));
-    setState(() => _message = 'ID copied to clipboard');
-  }
-
-  Future<void> _openExchange() async {
-    final uri = Uri.parse(ApiConfig.exchangeUrl);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      setState(() => _message = 'Could not open exchange page');
-    }
-  }
+  bool get _canRedeem => _codeController.text.trim().isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -117,16 +101,21 @@ class _RedeemGiftScreenState extends State<RedeemGiftScreen> {
                     TextField(
                       controller: _codeController,
                       onChanged: (_) => setState(() {}),
+                      textCapitalization: TextCapitalization.characters,
                       decoration: const InputDecoration(
-                        hintText: 'LSO-TE-XXXXXX',
+                        hintText: 'LD-TE-XXXXXX',
                         prefixIcon: Icon(Icons.confirmation_number_outlined),
                         border: OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 12),
                     FilledButton.icon(
-                      onPressed: () =>
-                          showComingSoon(context, feature: 'Gift code redeem'),
+                      onPressed: _canRedeem
+                          ? () => showComingSoon(
+                                context,
+                                feature: 'Gift code redeem',
+                              )
+                          : null,
                       icon: const Icon(Icons.check_circle_outline),
                       label: const Text('Redeem Code'),
                     ),
@@ -134,57 +123,6 @@ class _RedeemGiftScreenState extends State<RedeemGiftScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Exchange Website',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Your ID: ${widget.publicId}',
-                      style: const TextStyle(color: AppColors.textSecondary),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _copyId,
-                            icon: const Icon(Icons.copy),
-                            label: const Text('Copy ID'),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: FilledButton.icon(
-                            onPressed: _openExchange,
-                            icon: const Icon(Icons.open_in_new),
-                            label: const Text('Exchange'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (_message != null) ...[
-              const SizedBox(height: 12),
-              Text(
-                _message!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: AppColors.accentGreen,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
           ],
         ),
       ),

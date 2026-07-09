@@ -97,7 +97,6 @@ class ShellScreenState extends State<ShellScreen> {
         balance: _balance,
         tier: _tier,
         rate: _rate,
-        publicId: _publicId,
         loading: _loading,
         onRefresh: refresh,
       ),

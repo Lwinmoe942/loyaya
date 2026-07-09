@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Lotaya Shwe Oh')</title>
+    <meta name="robots" content="noindex, nofollow">
+    <title>@yield('title', 'Admin — Lotaya Shwe Oh')</title>
     <style>
         :root {
             --gold: #c9a227;
@@ -22,7 +23,7 @@
             color: var(--text);
             min-height: 100vh;
         }
-        .wrap { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+        .wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 48px; }
         .card {
             background: #fff;
             border: 1px solid #eadfc8;
@@ -70,16 +71,10 @@
         .badge-pending { background: #fff7ed; color: #c2410c; }
         .badge-approved { background: #ecfdf3; color: var(--ok); }
         .badge-rejected { background: #fef3f2; color: var(--danger); }
-        .rates { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin: 12px 0; }
-        .rate-box { background: #fffaf0; border: 1px solid #eadfc8; border-radius: 10px; padding: 10px; text-align: center; }
     </style>
 </head>
 <body>
     <div class="wrap">
-        <div class="nav">
-            <a href="{{ route('exchange.index') }}">Point Exchange</a>
-            <a href="{{ route('exchange.status.form') }}">Status</a>
-        </div>
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
         @endif

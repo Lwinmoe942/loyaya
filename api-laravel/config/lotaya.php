@@ -2,6 +2,12 @@
 
 return [
     'admin_api_key' => env('ADMIN_API_KEY', 'change-me-in-production'),
+    'admin_password' => env('ADMIN_PASSWORD'),
+    'admin_panel_path' => env('ADMIN_PANEL_PATH', 'admin'),
+    'admin_allowed_ips' => array_values(array_filter(array_map(
+        static fn (string $ip): string => trim($ip),
+        explode(',', (string) env('ADMIN_ALLOWED_IPS', '')),
+    ))),
 
     'rates' => [
         'bronze' => (int) env('RATE_BRONZE', 3),

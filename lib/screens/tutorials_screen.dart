@@ -13,8 +13,8 @@ class TutorialsScreen extends StatelessWidget {
       duration: '01:45',
     ),
     (
-      title: 'How to Redeem on Exchange',
-      subtitle: 'Copy ID and withdraw MMK',
+      title: 'How to Redeem Gift Codes',
+      subtitle: 'Enter your gift code and claim points',
       duration: '02:26',
     ),
     (

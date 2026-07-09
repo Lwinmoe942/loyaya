@@ -20,15 +20,16 @@ class AdminPanelController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'admin_key' => ['required', 'string'],
+            'admin_password' => ['required', 'string'],
         ]);
 
-        $expected = config('lotaya.admin_api_key');
-        if (! $expected || ! hash_equals($expected, $data['admin_key'])) {
-            return back()->with('error', 'Admin key မှားနေပါတယ်။');
+        $expected = config('lotaya.admin_password') ?: config('lotaya.admin_api_key');
+        if (! $expected || ! hash_equals($expected, $data['admin_password'])) {
+            return back()->with('error', 'Invalid admin password.');
         }
 
         $request->session()->put('admin_authenticated', true);
+        $request->session()->regenerate();
 
         return redirect()->route('admin.withdraws');
     }
@@ -36,6 +37,7 @@ class AdminPanelController extends Controller
     public function logout(Request $request): RedirectResponse
     {
         $request->session()->forget('admin_authenticated');
+        $request->session()->regenerateToken();
 
         return redirect()->route('admin.login');
     }

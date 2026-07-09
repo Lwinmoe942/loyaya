@@ -147,7 +147,7 @@ class ProfileTab extends StatelessWidget {
             _MenuTile(
               icon: Icons.info_outline,
               title: 'About Us',
-              onTap: () => _showInfo(context, 'About Us', 'Lotaya Shwe Oh — earn points and redeem on the exchange website.'),
+              onTap: () => _showInfo(context, 'About Us', 'Lotaya Shwe Oh — earn points with daily check-in, surveys, and quizzes.'),
             ),
             _MenuTile(
               icon: Icons.description_outlined,

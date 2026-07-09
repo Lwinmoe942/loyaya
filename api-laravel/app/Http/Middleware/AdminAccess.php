@@ -6,23 +6,17 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class AdminApiKey
+class AdminAccess
 {
     public function handle(Request $request, Closure $next): Response
     {
         $allowedIps = config('lotaya.admin_allowed_ips', []);
+
         if ($allowedIps !== []) {
             $clientIp = $request->ip();
             if (! in_array($clientIp, $allowedIps, true)) {
-                return response()->json(['error' => 'NOT_FOUND'], 404);
+                abort(404);
             }
-        }
-
-        $key = $request->header('X-Admin-Key');
-        $expected = config('lotaya.admin_api_key');
-
-        if (! $key || ! $expected || ! hash_equals($expected, $key)) {
-            return response()->json(['error' => 'FORBIDDEN'], 403);
         }
 
         return $next($request);
