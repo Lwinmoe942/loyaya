@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/theme/app_theme.dart';
-import 'package:loyaya/widgets/coming_soon_dialog.dart';
 import 'package:loyaya/widgets/dinga_page_header.dart';
 
 class RedeemGiftScreen extends StatefulWidget {
-  const RedeemGiftScreen({super.key});
+  const RedeemGiftScreen({super.key, required this.api});
+
+  final ApiClient api;
 
   @override
   State<RedeemGiftScreen> createState() => _RedeemGiftScreenState();
@@ -12,6 +14,9 @@ class RedeemGiftScreen extends StatefulWidget {
 
 class _RedeemGiftScreenState extends State<RedeemGiftScreen> {
   final _codeController = TextEditingController();
+  bool _submitting = false;
+  String? _message;
+  bool _success = false;
 
   @override
   void dispose() {
@@ -19,7 +24,39 @@ class _RedeemGiftScreenState extends State<RedeemGiftScreen> {
     super.dispose();
   }
 
-  bool get _canRedeem => _codeController.text.trim().isNotEmpty;
+  bool get _canRedeem =>
+      _codeController.text.trim().isNotEmpty && !_submitting;
+
+  Future<void> _redeem() async {
+    final code = _codeController.text.trim();
+    if (code.isEmpty) return;
+
+    setState(() {
+      _submitting = true;
+      _message = null;
+      _success = false;
+    });
+
+    try {
+      final result = await widget.api.redeemGiftCode(code);
+      setState(() {
+        _success = true;
+        _message = result['message'] as String? ??
+            'Redeemed! +${result['points']} points.';
+        _codeController.clear();
+      });
+    } on ApiException catch (e) {
+      setState(() {
+        _message = apiErrorMessage(e.error);
+      });
+    } catch (_) {
+      setState(() {
+        _message = 'Could not redeem code. Please try again.';
+      });
+    } finally {
+      if (mounted) setState(() => _submitting = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +68,7 @@ class _RedeemGiftScreenState extends State<RedeemGiftScreen> {
           children: [
             DingaPageHeader(
               title: 'Redeem Gift Code',
-              onBack: () => Navigator.pop(context),
+              onBack: () => Navigator.pop(context, _success),
               titleColor: AppColors.primary,
             ),
             Card(
@@ -103,21 +140,35 @@ class _RedeemGiftScreenState extends State<RedeemGiftScreen> {
                       onChanged: (_) => setState(() {}),
                       textCapitalization: TextCapitalization.characters,
                       decoration: const InputDecoration(
-                        hintText: 'LD-TE-XXXXXX',
+                        hintText: 'LSO-XXXXXX',
                         prefixIcon: Icon(Icons.confirmation_number_outlined),
                         border: OutlineInputBorder(),
                       ),
                     ),
+                    if (_message != null) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        _message!,
+                        style: TextStyle(
+                          color: _success ? AppColors.accentGreen : AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 12),
                     FilledButton.icon(
-                      onPressed: _canRedeem
-                          ? () => showComingSoon(
-                                context,
-                                feature: 'Gift code redeem',
-                              )
-                          : null,
-                      icon: const Icon(Icons.check_circle_outline),
-                      label: const Text('Redeem Code'),
+                      onPressed: _canRedeem ? _redeem : null,
+                      icon: _submitting
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.check_circle_outline),
+                      label: Text(_submitting ? 'Redeeming...' : 'Redeem Code'),
                     ),
                   ],
                 ),

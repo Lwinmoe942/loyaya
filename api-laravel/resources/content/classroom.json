@@ -1,0 +1,26 @@
+[
+  {
+    "id": "class_start",
+    "title": "Getting Started Guide",
+    "subtitle": "Learn the basics of Lotaya Shwe Oh",
+    "lessons": 5,
+    "points_required": 0,
+    "video_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  },
+  {
+    "id": "class_points",
+    "title": "Earn Points Faster",
+    "subtitle": "Check-in, quizzes, and surveys",
+    "lessons": 4,
+    "points_required": 100,
+    "video_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  },
+  {
+    "id": "class_withdraw",
+    "title": "Withdraw on Exchange Website",
+    "subtitle": "Copy Public ID and submit withdraw",
+    "lessons": 3,
+    "points_required": 500,
+    "video_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  }
+]

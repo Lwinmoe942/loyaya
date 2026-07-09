@@ -32,6 +32,7 @@ return [
         'daily_checkin' => ['points' => 10, 'daily' => true],
         'math_quiz' => ['points' => 2, 'daily' => false],
         'survey' => ['points' => 2, 'daily' => false],
+        'watch_video' => ['points' => 3, 'daily' => false],
     ],
 
     'exchange_url' => env('EXCHANGE_URL', 'http://localhost:8000/exchange'),

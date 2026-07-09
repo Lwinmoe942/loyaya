@@ -136,6 +136,55 @@ class ApiClient {
     );
   }
 
+  Future<Map<String, dynamic>> earnWatchVideo(String videoId) async {
+    return earn(
+      action: 'watch_video',
+      idempotentKey: 'watch_video_$videoId',
+      contentId: videoId,
+    );
+  }
+
+  Future<Map<String, dynamic>> redeemGiftCode(String code) async {
+    final res = await _post(
+      Uri.parse('${ApiConfig.baseUrl}/api/gift/redeem'),
+      headers: _headers,
+      body: jsonEncode({'code': code.trim()}),
+    );
+    return _parse(res);
+  }
+
+  Future<List<Map<String, dynamic>>> leaderboard() async {
+    final res = await _get(
+      Uri.parse('${ApiConfig.baseUrl}/api/leaderboard'),
+      headers: const {'Accept': 'application/json'},
+    );
+    final data = _parse(res);
+    final list = data['rows'] as List<dynamic>? ?? [];
+    return list.cast<Map<String, dynamic>>();
+  }
+
+  Future<List<Map<String, dynamic>>> tutorials() async {
+    return _catalogItems('/api/content/tutorials');
+  }
+
+  Future<List<Map<String, dynamic>>> classroomLessons() async {
+    return _catalogItems('/api/content/classroom');
+  }
+
+  Future<List<Map<String, dynamic>>> watchVideos() async {
+    return _catalogItems('/api/content/watch');
+  }
+
+  Future<List<Map<String, dynamic>>> _catalogItems(String path) async {
+    final res = await _get(
+      Uri.parse('${ApiConfig.baseUrl}$path'),
+      headers: const {'Accept': 'application/json'},
+    );
+    final data = _parse(res);
+    final list = data['items'] as List<dynamic>? ?? [];
+    return list.cast<Map<String, dynamic>>();
+  }
+
   Future<List<Map<String, dynamic>>> contentLocks() async {
     final res = await _get(
       Uri.parse('${ApiConfig.baseUrl}/api/content/locks'),
@@ -262,6 +311,10 @@ String apiErrorMessage(String error) {
     'EMAIL_EXISTS' => 'This email already has an account. Please sign in.',
     'LOCKED_TRY_TOMORROW' =>
       'You answered wrong today. Please try again tomorrow.',
+    'INVALID_CODE' => 'Invalid gift code. Please check and try again.',
+    'ALREADY_REDEEMED' => 'You already redeemed this gift code.',
+    'EXPIRED' => 'This gift code has expired.',
+    'MAX_USES' => 'This gift code has reached its use limit.',
     'INVALID_CREDENTIALS' => 'Invalid email or password.',
     'VALIDATION_ERROR' => 'Please check your input and try again.',
     'API_NOT_FOUND_CHECK_URL' =>

@@ -2,13 +2,21 @@
 
 use App\Http\Controllers\Api\AdminWithdrawController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ContentController;
+use App\Http\Controllers\Api\GiftCodeController;
+use App\Http\Controllers\Api\LeaderboardController;
 use App\Http\Controllers\Api\PointsController;
 use App\Http\Controllers\Api\WithdrawController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
+
+Route::get('/leaderboard', [LeaderboardController::class, 'index']);
+Route::get('/content/tutorials', [CatalogController::class, 'tutorials']);
+Route::get('/content/classroom', [CatalogController::class, 'classroom']);
+Route::get('/content/watch', [CatalogController::class, 'watchVideos']);
 
 Route::middleware('api.token')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
@@ -17,6 +25,7 @@ Route::middleware('api.token')->group(function () {
     Route::post('/points/earn', [PointsController::class, 'earn']);
     Route::get('/content/locks', [ContentController::class, 'locks']);
     Route::post('/content/fail', [ContentController::class, 'fail']);
+    Route::post('/gift/redeem', [GiftCodeController::class, 'redeem']);
 });
 
 Route::post('/withdraw/request', [WithdrawController::class, 'request']);

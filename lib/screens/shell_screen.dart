@@ -100,8 +100,8 @@ class ShellScreenState extends State<ShellScreen> {
         loading: _loading,
         onRefresh: refresh,
       ),
-      LeaderboardTab(loading: _loading),
-      ClassroomTab(balance: _balance, loading: _loading),
+      LeaderboardTab(api: widget.api, loading: _loading),
+      ClassroomTab(api: widget.api, balance: _balance, loading: _loading),
       ProfileTab(
         user: _user,
         balance: _balance,

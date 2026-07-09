@@ -17,6 +17,36 @@ Route::post('/exchange', [ExchangeController::class, 'submit'])->name('exchange.
 Route::get('/exchange/status', [ExchangeController::class, 'statusForm'])->name('exchange.status.form');
 Route::post('/exchange/status', [ExchangeController::class, 'statusCheck'])->name('exchange.status.check');
 
+Route::get('/robots.txt', function () {
+    $base = rtrim(config('app.url') ?: url('/'), '/');
+    $content = "User-agent: *\n";
+    $content .= "Allow: /\n";
+    $content .= "Disallow: /api/\n";
+    $content .= "Disallow: /admin\n";
+    $content .= "Sitemap: {$base}/sitemap.xml\n";
+
+    return response($content, 200)->header('Content-Type', 'text/plain');
+});
+
+Route::get('/sitemap.xml', function () {
+    $base = rtrim(config('app.url') ?: url('/'), '/');
+    $urls = [
+        "{$base}/",
+        "{$base}/exchange",
+        "{$base}/exchange/status",
+        "{$base}/health",
+    ];
+
+    $xml = '<?xml version="1.0" encoding="UTF-8"?>';
+    $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+    foreach ($urls as $u) {
+        $xml .= '<url><loc>'.e($u).'</loc><changefreq>daily</changefreq><priority>0.8</priority></url>';
+    }
+    $xml .= '</urlset>';
+
+    return response($xml, 200)->header('Content-Type', 'application/xml');
+});
+
 $adminPath = trim((string) config('lotaya.admin_panel_path', 'admin'), '/');
 
 Route::middleware('admin.access')->prefix($adminPath)->name('admin.')->group(function () {
@@ -27,7 +57,10 @@ Route::middleware('admin.access')->prefix($adminPath)->name('admin.')->group(fun
     Route::post('/logout', [AdminPanelController::class, 'logout'])->name('logout');
 
     Route::middleware('admin.session')->group(function () {
+        Route::get('/dashboard', [AdminPanelController::class, 'dashboard'])->name('dashboard');
         Route::get('/withdraws', [AdminPanelController::class, 'withdraws'])->name('withdraws');
+        Route::get('/gift-codes', [AdminPanelController::class, 'giftCodes'])->name('gift-codes');
+        Route::post('/gift-codes', [AdminPanelController::class, 'createGiftCodes'])->name('gift-codes.create');
         Route::post('/withdraws/{id}/approve', [AdminPanelController::class, 'approve'])->name('withdraws.approve');
         Route::post('/withdraws/{id}/reject', [AdminPanelController::class, 'reject'])->name('withdraws.reject');
     });

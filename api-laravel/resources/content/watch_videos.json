@@ -1,0 +1,16 @@
+[
+  {
+    "id": "watch_start",
+    "title": "Getting Started Video",
+    "points": 3,
+    "watch_seconds": 20,
+    "video_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  },
+  {
+    "id": "watch_earn",
+    "title": "Earn Points Tutorial",
+    "points": 3,
+    "watch_seconds": 20,
+    "video_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  }
+]

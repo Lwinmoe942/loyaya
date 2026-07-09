@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\WithdrawRequest;
+use App\Services\ExchangeStatsService;
 use App\Services\PointService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -10,14 +11,24 @@ use Illuminate\View\View;
 
 class ExchangeController extends Controller
 {
-    public function __construct(private readonly PointService $points) {}
+    public function __construct(
+        private readonly PointService $points,
+        private readonly ExchangeStatsService $stats,
+    ) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $statusCounts = $this->stats->statusCounts();
+
         return view('exchange.index', [
             'minPoints' => config('lotaya.min_withdraw_points', 500),
             'step' => config('lotaya.withdraw_step', 500),
             'rates' => config('lotaya.rates', []),
+            'statusCounts' => $statusCounts,
+            'totalApprovedMmk' => $this->stats->totalApprovedMmk(),
+            'paymentTotals' => $this->stats->approvedMmkByPaymentMethod(),
+            'tierCards' => $this->stats->tierCards(),
+            'transactions' => $this->stats->recentTransactions(15),
         ]);
     }
 

@@ -172,7 +172,7 @@ class _HomeTabState extends State<HomeTab> {
                   label: 'Redeem',
                   icon: Icons.card_giftcard,
                   color: const Color(0xFF81C784),
-                  onTap: () => _open(const RedeemGiftScreen()),
+                  onTap: () => _open(RedeemGiftScreen(api: widget.api)),
                 ),
                 EarnGridItem(
                   label: 'Survey',
@@ -190,7 +190,7 @@ class _HomeTabState extends State<HomeTab> {
                   label: 'Tutorials',
                   icon: Icons.play_circle_outline,
                   color: const Color(0xFF3949AB),
-                  onTap: () => _open(const TutorialsScreen()),
+                  onTap: () => _open(TutorialsScreen(api: widget.api)),
                 ),
                 EarnGridItem(
                   label: 'AI Tools',
@@ -202,7 +202,7 @@ class _HomeTabState extends State<HomeTab> {
                   label: 'Watch',
                   icon: Icons.play_arrow_rounded,
                   color: const Color(0xFF3949AB),
-                  onTap: () => _open(const WatchScreen()),
+                  onTap: () => _open(WatchScreen(api: widget.api)),
                 ),
                 EarnGridItem(
                   label: 'Games',
