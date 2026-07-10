@@ -12,6 +12,16 @@ Route::get('/', function () {
     return redirect()->route('exchange.index');
 });
 
+Route::get('/join', function () {
+    $ref = request('ref');
+    $appName = 'Lotaya Dinga';
+
+    return response()->view('join', [
+        'ref' => $ref,
+        'appName' => $appName,
+    ]);
+})->name('join');
+
 Route::get('/exchange', [ExchangeController::class, 'index'])->name('exchange.index');
 Route::post('/exchange', [ExchangeController::class, 'submit'])->name('exchange.submit');
 Route::get('/exchange/status', [ExchangeController::class, 'status'])->name('exchange.status.form');

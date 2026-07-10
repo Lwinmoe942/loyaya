@@ -25,6 +25,7 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'max:190'],
             'password' => ['required', 'string', 'min:6'],
             'phone' => ['nullable', 'string', 'max:30'],
+            'referral_code' => ['nullable', 'string', 'max:12'],
         ]);
 
         $email = strtolower(trim($data['email']));
@@ -49,6 +50,17 @@ class AuthController extends Controller
             'tier' => 'bronze',
             'api_token' => $token,
         ]);
+
+        if (! empty($data['referral_code'] ?? null)) {
+            try {
+                app(\App\Services\ReferralService::class)
+                    ->linkOnRegister($user, $data['referral_code']);
+            } catch (\RuntimeException) {
+                // Invalid referral on sign-up is ignored so registration still succeeds.
+            }
+        }
+
+        app(\App\Services\ReferralService::class)->ensureReferralCode($user->fresh());
 
         return response()->json([
             'user' => $this->presenter->format($user),

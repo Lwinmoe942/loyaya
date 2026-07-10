@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\ContentController;
 use App\Http\Controllers\Api\GamesController;
 use App\Http\Controllers\Api\GiftCodeController;
 use App\Http\Controllers\Api\LeaderboardController;
-use App\Http\Controllers\Api\PointsController;
+use App\Http\Controllers\Api\ReferralController;
 use App\Http\Controllers\Api\WithdrawController;
 use Illuminate\Support\Facades\Route;
 
@@ -38,6 +38,8 @@ Route::middleware('api.token')->group(function () {
     Route::post('/ai/estimate', [AiController::class, 'estimate']);
     Route::post('/ai/record-to-text', [AiController::class, 'recordToText']);
     Route::post('/ai/text-to-voice', [AiController::class, 'textToVoice']);
+    Route::get('/referral/status', [ReferralController::class, 'status']);
+    Route::post('/referral/apply', [ReferralController::class, 'apply']);
 });
 
 Route::post('/withdraw/request', [WithdrawController::class, 'request']);

@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:loyaya/screens/referral_screen.dart';
+import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/theme/app_theme.dart';
 import 'package:loyaya/widgets/coming_soon_dialog.dart';
 
 class ProfileTab extends StatelessWidget {
   const ProfileTab({
     super.key,
+    required this.api,
     required this.user,
     required this.balance,
     required this.publicId,
     required this.onLogout,
     required this.onRefresh,
   });
+
+  final ApiClient api;
 
   final Map<String, dynamic>? user;
   final int balance;
@@ -136,8 +141,12 @@ class ProfileTab extends StatelessWidget {
             const SizedBox(height: 12),
             _MenuTile(
               icon: Icons.share_outlined,
-              title: 'Referral',
-              onTap: () => showComingSoon(context, feature: 'Referral'),
+              title: 'Referral Program',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ReferralScreen(api: api),
+                ),
+              ),
             ),
             _MenuTile(
               icon: Icons.restart_alt,

@@ -160,6 +160,14 @@ class PointService
 
             $this->syncUserTier($userId);
 
+            if ($amount > 0 && str_starts_with($type, 'earn_')) {
+                app(ReferralService::class)->rewardReferrer(
+                    $userId,
+                    $amount,
+                    $idempotentKey ?? "{$type}_{$userId}_".now()->timestamp,
+                );
+            }
+
             return [
                 'duplicate' => false,
                 'balance' => $newBalance,

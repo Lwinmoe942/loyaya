@@ -23,6 +23,7 @@ class _AuthScreenState extends State<AuthScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _referralController = TextEditingController();
   bool _isLogin = true;
   bool _loading = false;
   String? _error;
@@ -39,6 +40,7 @@ class _AuthScreenState extends State<AuthScreen> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _referralController.dispose();
     super.dispose();
   }
 
@@ -73,6 +75,7 @@ class _AuthScreenState extends State<AuthScreen> {
           name: _nameController.text.trim(),
           email: _emailController.text.trim().toLowerCase(),
           password: _passwordController.text,
+          referralCode: _referralController.text,
         );
       }
 
@@ -174,6 +177,21 @@ class _AuthScreenState extends State<AuthScreen> {
                   fillColor: Colors.white,
                 ),
               ),
+              if (!_isLogin) ...[
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _referralController,
+                  enabled: !_loading,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: const InputDecoration(
+                    labelText: 'Referral Code (optional)',
+                    hintText: 'Lotaya Dinga invite code',
+                    border: OutlineInputBorder(),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                ),
+              ],
               if (_error != null) ...[
                 const SizedBox(height: 12),
                 Text(

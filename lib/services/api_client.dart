@@ -39,6 +39,7 @@ class ApiClient {
     required String email,
     required String password,
     String? phone,
+    String? referralCode,
   }) async {
     return _withRetry(() async {
       final res = await _post(
@@ -49,6 +50,8 @@ class ApiClient {
           'email': email,
           'password': password,
           if (phone != null && phone.isNotEmpty) 'phone': phone,
+          if (referralCode != null && referralCode.trim().isNotEmpty)
+            'referral_code': referralCode.trim().toUpperCase(),
         }),
       );
       return _parse(res);
@@ -319,6 +322,23 @@ class ApiClient {
     return _parse(res);
   }
 
+  Future<Map<String, dynamic>> referralStatus() async {
+    final res = await _get(
+      Uri.parse('${ApiConfig.baseUrl}/api/referral/status'),
+      headers: _headers,
+    );
+    return _parse(res);
+  }
+
+  Future<Map<String, dynamic>> applyReferralCode(String code) async {
+    final res = await _post(
+      Uri.parse('${ApiConfig.baseUrl}/api/referral/apply'),
+      headers: _headers,
+      body: jsonEncode({'code': code.trim().toUpperCase()}),
+    );
+    return _parse(res);
+  }
+
   Future<T> _withRetry<T>(Future<T> Function() action) async {
     Object? lastError;
     for (var attempt = 0; attempt < 2; attempt++) {
@@ -430,6 +450,8 @@ String apiErrorMessage(String error) {
     'INSUFFICIENT_POINTS' => 'Not enough points for this AI action.',
     'EMPTY_TEXT' => 'Please enter some text first.',
     'INVALID_REQUEST' => 'Invalid request. Please try again.',
+    'ALREADY_APPLIED' => 'You already applied a referral code.',
+    'SELF_REFERRAL' => 'You cannot use your own referral code.',
     'DAILY_LIMIT' => 'Daily win limit reached. Try again tomorrow.',
     'ALREADY_CLAIMED' => 'Points for this match were already claimed.',
     'INVALID_MATCH' => 'Invalid game session. Please start a new match.',

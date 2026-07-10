@@ -18,6 +18,8 @@ class User extends Authenticatable
         'phone',
         'tier',
         'api_token',
+        'referral_code',
+        'referred_by_user_id',
     ];
 
     protected $hidden = [

@@ -36,4 +36,5 @@ return [
     ],
 
     'exchange_url' => env('EXCHANGE_URL', 'http://localhost:8000/exchange'),
+    'app_url' => env('APP_URL', 'http://localhost:8000'),
 ];
