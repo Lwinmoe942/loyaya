@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ContentController;
 use App\Http\Controllers\Api\GamesController;
 use App\Http\Controllers\Api\GiftCodeController;
 use App\Http\Controllers\Api\LeaderboardController;
+use App\Http\Controllers\Api\PointsController;
 use App\Http\Controllers\Api\ReferralController;
 use App\Http\Controllers\Api\WithdrawController;
 use Illuminate\Support\Facades\Route;

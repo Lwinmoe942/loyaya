@@ -6,6 +6,8 @@ import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/theme/app_theme.dart';
 import 'package:loyaya/widgets/ad_banner.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
 class WatchVideoPlayerScreen extends StatefulWidget {
   const WatchVideoPlayerScreen({
@@ -35,20 +37,40 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
 
   String get _videoId {
     final url = widget.video['video_url']?.toString() ?? '';
-    return youtubeIdFromUrl(url) ?? 'dQw4w9WgXcQ';
+    return youtubeIdFromUrl(url) ?? 'M7lc1UVf-VE';
   }
 
   @override
   void initState() {
     super.initState();
     _minWatchSeconds = widget.video['watch_seconds'] as int? ?? 20;
-    _webView = WebViewController()
+
+    late final PlatformWebViewControllerCreationParams params;
+    if (WebViewPlatform.instance is AndroidWebViewPlatform) {
+      params = AndroidWebViewControllerCreationParams();
+    } else if (WebViewPlatform.instance is WebKitWebViewPlatform) {
+      params = WebKitWebViewControllerCreationParams(
+        allowsInlineMediaPlayback: true,
+        mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
+      );
+    } else {
+      params = const PlatformWebViewControllerCreationParams();
+    }
+
+    final controller = WebViewController.fromPlatformCreationParams(params)
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.black)
       ..loadHtmlString(
         _youtubeEmbedHtml(_videoId),
         baseUrl: 'https://www.youtube.com',
       );
+
+    if (controller.platform is AndroidWebViewController) {
+      (controller.platform as AndroidWebViewController)
+          .setMediaPlaybackRequiresUserGesture(false);
+    }
+
+    _webView = controller;
     _startTimer();
   }
 
@@ -276,7 +298,7 @@ String _youtubeEmbedHtml(String videoId) {
 </head>
 <body>
   <iframe
-    src="https://www.youtube-nocookie.com/embed/$videoId?autoplay=1&playsinline=1&rel=0&modestbranding=1"
+    src="https://www.youtube.com/embed/$videoId?autoplay=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1&origin=https://www.youtube.com"
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
     allowfullscreen>
   </iframe>
@@ -306,6 +328,6 @@ String? youtubeIdFromUrl(String url) {
 }
 
 String youtubeThumbUrl(String? videoUrl) {
-  final id = youtubeIdFromUrl(videoUrl ?? '') ?? 'dQw4w9WgXcQ';
+  final id = youtubeIdFromUrl(videoUrl ?? '') ?? 'M7lc1UVf-VE';
   return 'https://img.youtube.com/vi/$id/hqdefault.jpg';
 }

@@ -24,7 +24,7 @@ class _WatchScreenState extends State<WatchScreen> {
       'points': 1,
       'bonus_points': 1,
       'watch_seconds': 20,
-      'video_url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      'video_url': 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
     },
     {
       'id': 'watch_earn',
@@ -32,7 +32,7 @@ class _WatchScreenState extends State<WatchScreen> {
       'points': 1,
       'bonus_points': 1,
       'watch_seconds': 20,
-      'video_url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+      'video_url': 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
     },
   ];
 
