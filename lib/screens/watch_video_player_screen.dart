@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:loyaya/services/ad_service.dart';
 import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/theme/app_theme.dart';
 import 'package:loyaya/widgets/ad_banner.dart';
@@ -21,14 +22,16 @@ class WatchVideoPlayerScreen extends StatefulWidget {
 }
 
 class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
-  static const _minWatchSeconds = 20;
-
+  late final int _minWatchSeconds;
   late final WebViewController _webView;
   Timer? _timer;
   int _progress = 0;
   bool _claiming = false;
   bool _claimed = false;
   String? _error;
+
+  int get _basePoints => widget.video['points'] as int? ?? 1;
+  int get _bonusPoints => widget.video['bonus_points'] as int? ?? 1;
 
   String get _videoId {
     final url = widget.video['video_url']?.toString() ?? '';
@@ -38,13 +41,13 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
   @override
   void initState() {
     super.initState();
+    _minWatchSeconds = widget.video['watch_seconds'] as int? ?? 20;
     _webView = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.black)
-      ..loadRequest(
-        Uri.parse(
-          'https://www.youtube.com/embed/$_videoId?autoplay=1&playsinline=1&rel=0',
-        ),
+      ..loadHtmlString(
+        _youtubeEmbedHtml(_videoId),
+        baseUrl: 'https://www.youtube.com',
       );
     _startTimer();
   }
@@ -77,17 +80,16 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
       final result = await widget.api.earnWatchVideo(id);
       if (!mounted) return;
       setState(() => _claimed = true);
-      final points = widget.video['points'] as int? ?? 3;
       if (result['duplicate'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('You already claimed this video.')),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Earned +$points points!')),
+          SnackBar(content: Text('Earned +$_basePoints point!')),
         );
       }
-      Navigator.pop(context, true);
+      await _askBonusDialog();
     } on ApiException catch (e) {
       if (mounted) {
         setState(() {
@@ -105,10 +107,92 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
     }
   }
 
+  Future<void> _askBonusDialog() async {
+    if (!mounted) return;
+
+    final takeBonus = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text('Bonus +$_bonusPoints'),
+        content: Text(
+          'Watch 1 reward ad to claim bonus +$_bonusPoints point?\n\n'
+          'You can also claim the bonus later from the video list.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Skip'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Watch ad'),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (takeBonus == true) {
+      await _claimBonusWithAd();
+    } else if (mounted) {
+      Navigator.pop(context, true);
+    }
+  }
+
+  Future<void> _claimBonusWithAd() async {
+    final rewarded = await AdService.instance.showRewarded(
+      onAdNotReady: () {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Ad is loading. Please try again.')),
+          );
+        }
+      },
+    );
+
+    if (!mounted) return;
+    if (!rewarded) {
+      Navigator.pop(context, true);
+      return;
+    }
+
+    final id = widget.video['id']?.toString() ?? '';
+    try {
+      final result = await widget.api.earnWatchVideoBonus(id);
+      if (!mounted) return;
+      if (result['duplicate'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Bonus already claimed.')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Bonus +$_bonusPoints point earned!')),
+        );
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(apiErrorMessage(e.error))),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not claim bonus points.')),
+        );
+      }
+    }
+
+    if (mounted) Navigator.pop(context, true);
+  }
+
   @override
   Widget build(BuildContext context) {
     final title = widget.video['title']?.toString() ?? 'Watch Video';
-    final remaining = (_minWatchSeconds - _progress).clamp(0, _minWatchSeconds);
+    final remaining =
+        (_minWatchSeconds - _progress).clamp(0, _minWatchSeconds);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -152,10 +236,11 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
                       ? 'Points claimed!'
                       : _claiming
                           ? 'Claiming points...'
-                          : 'Keep watching — $remaining seconds left for +${widget.video['points'] ?? 3} pts',
+                          : 'Keep watching — $remaining seconds left for +$_basePoints pt',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: _claimed ? AppColors.accentGreen : AppColors.textSecondary,
+                    color:
+                        _claimed ? AppColors.accentGreen : AppColors.textSecondary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -176,6 +261,28 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
       ),
     );
   }
+}
+
+String _youtubeEmbedHtml(String videoId) {
+  return '''
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <style>
+    html, body { margin: 0; padding: 0; background: #000; height: 100%; }
+    iframe { width: 100%; height: 100%; border: 0; }
+  </style>
+</head>
+<body>
+  <iframe
+    src="https://www.youtube-nocookie.com/embed/$videoId?autoplay=1&playsinline=1&rel=0&modestbranding=1"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen>
+  </iframe>
+</body>
+</html>
+''';
 }
 
 String? youtubeIdFromUrl(String url) {

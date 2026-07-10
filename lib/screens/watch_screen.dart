@@ -21,14 +21,16 @@ class _WatchScreenState extends State<WatchScreen> {
     {
       'id': 'watch_start',
       'title': 'Getting Started Video',
-      'points': 3,
+      'points': 1,
+      'bonus_points': 1,
       'watch_seconds': 20,
       'video_url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     },
     {
       'id': 'watch_earn',
       'title': 'Earn Points Tutorial',
-      'points': 3,
+      'points': 1,
+      'bonus_points': 1,
       'watch_seconds': 20,
       'video_url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
     },
@@ -37,7 +39,8 @@ class _WatchScreenState extends State<WatchScreen> {
   List<Map<String, dynamic>> _videos = [];
   bool _loading = true;
   bool _starting = false;
-  final Set<String> _claimed = {};
+  final Set<String> _claimedBase = {};
+  final Set<String> _claimedBonus = {};
 
   @override
   void initState() {
@@ -58,13 +61,18 @@ class _WatchScreenState extends State<WatchScreen> {
       // Keep fallback videos when catalog API is unreachable.
     }
 
-    final claimed = <String>{};
+    final claimedBase = <String>{};
+    final claimedBonus = <String>{};
     try {
       final history = await widget.api.history();
       for (final row in history) {
-        if (row['type']?.toString() == 'earn_watch_video') {
-          final ref = row['reference_id']?.toString();
-          if (ref != null && ref.isNotEmpty) claimed.add(ref);
+        final ref = row['reference_id']?.toString();
+        if (ref == null || ref.isEmpty) continue;
+        final type = row['type']?.toString();
+        if (type == 'earn_watch_video') {
+          claimedBase.add(ref);
+        } else if (type == 'earn_watch_video_bonus') {
+          claimedBonus.add(ref);
         }
       }
     } catch (_) {
@@ -74,9 +82,12 @@ class _WatchScreenState extends State<WatchScreen> {
     if (mounted) {
       setState(() {
         _videos = items;
-        _claimed
+        _claimedBase
           ..clear()
-          ..addAll(claimed);
+          ..addAll(claimedBase);
+        _claimedBonus
+          ..clear()
+          ..addAll(claimedBonus);
         _loading = false;
       });
     }
@@ -84,7 +95,34 @@ class _WatchScreenState extends State<WatchScreen> {
 
   Future<void> _startWatch(Map<String, dynamic> video) async {
     final id = video['id']?.toString() ?? '';
-    if (_claimed.contains(id) || _starting) return;
+    if (_claimedBase.contains(id) || _starting) return;
+
+    setState(() => _starting = true);
+
+    final completed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => WatchVideoPlayerScreen(
+          api: widget.api,
+          video: video,
+        ),
+      ),
+    );
+
+    if (!mounted) return;
+    setState(() => _starting = false);
+
+    if (completed == true) {
+      await _load();
+    }
+  }
+
+  Future<void> _claimBonus(Map<String, dynamic> video) async {
+    final id = video['id']?.toString() ?? '';
+    if (!_claimedBase.contains(id) ||
+        _claimedBonus.contains(id) ||
+        _starting) {
+      return;
+    }
 
     setState(() => _starting = true);
 
@@ -104,21 +142,34 @@ class _WatchScreenState extends State<WatchScreen> {
       return;
     }
 
-    final completed = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => WatchVideoPlayerScreen(
-          api: widget.api,
-          video: video,
-        ),
-      ),
-    );
-
-    if (!mounted) return;
-    setState(() => _starting = false);
-
-    if (completed == true) {
-      setState(() => _claimed.add(id));
+    try {
+      final result = await widget.api.earnWatchVideoBonus(id);
+      if (!mounted) return;
+      final bonus = video['bonus_points'] as int? ?? 1;
+      if (result['duplicate'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Bonus already claimed for this video.')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Bonus +$bonus point earned!')),
+        );
+      }
       await _load();
+    } on ApiException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(apiErrorMessage(e.error))),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not claim bonus points.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _starting = false);
     }
   }
 
@@ -136,8 +187,12 @@ class _WatchScreenState extends State<WatchScreen> {
               child: DingaPageHeader(
                 title: 'Watch & Get Points',
                 subtitle:
-                    'Watch the reward ad, then watch the video for at least 20 seconds.',
-                onBack: () => Navigator.pop(context, _claimed.isNotEmpty),
+                    'Watch the video for at least 20 seconds to earn 1 point. '
+                    'Watch another ad for bonus +1.',
+                onBack: () => Navigator.pop(
+                  context,
+                  _claimedBase.isNotEmpty || _claimedBonus.isNotEmpty,
+                ),
                 titleColor: Colors.white,
                 subtitleColor: Colors.white70,
               ),
@@ -159,14 +214,21 @@ class _WatchScreenState extends State<WatchScreen> {
                           for (final video in _videos)
                             _WatchCard(
                               title: video['title']?.toString() ?? '',
-                              points: video['points'] as int? ?? 3,
+                              points: video['points'] as int? ?? 1,
+                              bonusPoints: video['bonus_points'] as int? ?? 1,
                               watchSec: video['watch_seconds'] as int? ?? 20,
                               thumbUrl: youtubeThumbUrl(
                                 video['video_url']?.toString(),
                               ),
-                              claimed: _claimed.contains(video['id']?.toString()),
+                              baseClaimed: _claimedBase.contains(
+                                video['id']?.toString(),
+                              ),
+                              bonusClaimed: _claimedBonus.contains(
+                                video['id']?.toString(),
+                              ),
                               loading: _starting,
-                              onTap: () => _startWatch(video),
+                              onWatch: () => _startWatch(video),
+                              onBonus: () => _claimBonus(video),
                             ),
                         ],
                       ),
@@ -181,23 +243,31 @@ class _WatchCard extends StatelessWidget {
   const _WatchCard({
     required this.title,
     required this.points,
+    required this.bonusPoints,
     required this.watchSec,
     required this.thumbUrl,
-    required this.claimed,
+    required this.baseClaimed,
+    required this.bonusClaimed,
     required this.loading,
-    required this.onTap,
+    required this.onWatch,
+    required this.onBonus,
   });
 
   final String title;
   final int points;
+  final int bonusPoints;
   final int watchSec;
   final String thumbUrl;
-  final bool claimed;
+  final bool baseClaimed;
+  final bool bonusClaimed;
   final bool loading;
-  final VoidCallback onTap;
+  final VoidCallback onWatch;
+  final VoidCallback onBonus;
 
   @override
   Widget build(BuildContext context) {
+    final fullyClaimed = baseClaimed && bonusClaimed;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -255,7 +325,7 @@ class _WatchCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    '$points Points',
+                    '$points Point${points == 1 ? '' : 's'}',
                     style: TextStyle(
                       color: Colors.amber.shade900,
                       fontWeight: FontWeight.bold,
@@ -264,6 +334,14 @@ class _WatchCard extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Bonus +$bonusPoints with another ad',
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 12,
+              ),
             ),
             const SizedBox(height: 8),
             Row(
@@ -280,7 +358,7 @@ class _WatchCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            if (claimed)
+            if (fullyClaimed)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -297,9 +375,9 @@ class _WatchCard extends StatelessWidget {
                   ),
                 ),
               )
-            else
+            else if (baseClaimed && !bonusClaimed)
               FilledButton(
-                onPressed: loading ? null : onTap,
+                onPressed: loading ? null : onBonus,
                 child: loading
                     ? const SizedBox(
                         width: 22,
@@ -309,7 +387,21 @@ class _WatchCard extends StatelessWidget {
                           color: Colors.white,
                         ),
                       )
-                    : const Text('Watch Ad & Play'),
+                    : Text('Watch Ad for +$bonusPoints Bonus'),
+              )
+            else
+              FilledButton(
+                onPressed: loading ? null : onWatch,
+                child: loading
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text('Watch & Play'),
               ),
           ],
         ),

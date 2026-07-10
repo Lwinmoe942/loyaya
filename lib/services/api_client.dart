@@ -148,6 +148,14 @@ class ApiClient {
     );
   }
 
+  Future<Map<String, dynamic>> earnWatchVideoBonus(String videoId) async {
+    return earn(
+      action: 'watch_video_bonus',
+      idempotentKey: 'watch_video_bonus_$videoId',
+      contentId: videoId,
+    );
+  }
+
   Future<Map<String, dynamic>> redeemGiftCode(String code) async {
     final res = await _post(
       Uri.parse('${ApiConfig.baseUrl}/api/gift/redeem'),
