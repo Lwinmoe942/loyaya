@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AdminWithdrawController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ContentController;
+use App\Http\Controllers\Api\GamesController;
 use App\Http\Controllers\Api\GiftCodeController;
 use App\Http\Controllers\Api\LeaderboardController;
 use App\Http\Controllers\Api\PointsController;
@@ -26,6 +27,11 @@ Route::middleware('api.token')->group(function () {
     Route::get('/content/locks', [ContentController::class, 'locks']);
     Route::post('/content/fail', [ContentController::class, 'fail']);
     Route::post('/gift/redeem', [GiftCodeController::class, 'redeem']);
+    Route::get('/games/status', [GamesController::class, 'status']);
+    Route::post('/games/scratch', [GamesController::class, 'scratch']);
+    Route::post('/games/spin', [GamesController::class, 'spin']);
+    Route::post('/games/tic-tac-toe', [GamesController::class, 'ticTacToe']);
+    Route::post('/games/tic-tac-toe/bonus', [GamesController::class, 'ticTacToeBonus']);
 });
 
 Route::post('/withdraw/request', [WithdrawController::class, 'request']);

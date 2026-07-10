@@ -184,7 +184,7 @@ class _HomeTabState extends State<HomeTab> {
                   label: 'Scratch',
                   icon: Icons.style_outlined,
                   color: const Color(0xFF5C6BC0),
-                  onTap: () => _open(const ScratchScreen()),
+                  onTap: () => _open(ScratchScreen(api: widget.api)),
                 ),
                 EarnGridItem(
                   label: 'Tutorials',
@@ -208,7 +208,7 @@ class _HomeTabState extends State<HomeTab> {
                   label: 'Games',
                   icon: Icons.sports_esports_outlined,
                   color: const Color(0xFF3949AB),
-                  onTap: () => _open(const GamesScreen()),
+                  onTap: () => _open(GamesScreen(api: widget.api)),
                 ),
                 EarnGridItem(
                   label: 'Math Quiz',

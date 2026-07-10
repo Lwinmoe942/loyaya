@@ -210,6 +210,50 @@ class ApiClient {
     return _parse(res);
   }
 
+  Future<Map<String, dynamic>> gamesStatus() async {
+    final res = await _get(
+      Uri.parse('${ApiConfig.baseUrl}/api/games/status'),
+      headers: _headers,
+    );
+    return _parse(res);
+  }
+
+  Future<Map<String, dynamic>> playScratch() async {
+    final res = await _post(
+      Uri.parse('${ApiConfig.baseUrl}/api/games/scratch'),
+      headers: _headers,
+      body: '{}',
+    );
+    return _parse(res);
+  }
+
+  Future<Map<String, dynamic>> playSpin() async {
+    final res = await _post(
+      Uri.parse('${ApiConfig.baseUrl}/api/games/spin'),
+      headers: _headers,
+      body: '{}',
+    );
+    return _parse(res);
+  }
+
+  Future<Map<String, dynamic>> ticTacToeWin(String matchId) async {
+    final res = await _post(
+      Uri.parse('${ApiConfig.baseUrl}/api/games/tic-tac-toe'),
+      headers: _headers,
+      body: jsonEncode({'match_id': matchId}),
+    );
+    return _parse(res);
+  }
+
+  Future<Map<String, dynamic>> ticTacToeBonus(String matchId) async {
+    final res = await _post(
+      Uri.parse('${ApiConfig.baseUrl}/api/games/tic-tac-toe/bonus'),
+      headers: _headers,
+      body: jsonEncode({'match_id': matchId}),
+    );
+    return _parse(res);
+  }
+
   Future<T> _withRetry<T>(Future<T> Function() action) async {
     Object? lastError;
     for (var attempt = 0; attempt < 2; attempt++) {
@@ -315,6 +359,10 @@ String apiErrorMessage(String error) {
     'ALREADY_REDEEMED' => 'You already redeemed this gift code.',
     'EXPIRED' => 'This gift code has expired.',
     'MAX_USES' => 'This gift code has reached its use limit.',
+    'ALREADY_PLAYED_TODAY' => 'You already played this game today. Come back tomorrow!',
+    'DAILY_LIMIT' => 'Daily win limit reached. Try again tomorrow.',
+    'ALREADY_CLAIMED' => 'Points for this match were already claimed.',
+    'INVALID_MATCH' => 'Invalid game session. Please start a new match.',
     'INVALID_CREDENTIALS' => 'Invalid email or password.',
     'VALIDATION_ERROR' => 'Please check your input and try again.',
     'API_NOT_FOUND_CHECK_URL' =>

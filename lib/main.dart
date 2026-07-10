@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:loyaya/screens/auth_screen.dart';
 import 'package:loyaya/screens/shell_screen.dart';
+import 'package:loyaya/services/ad_service.dart';
 import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/services/progress_service.dart';
 import 'package:loyaya/services/session_service.dart';
 import 'package:loyaya/theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AdService.instance.init();
   runApp(const LotayaShweOhApp());
 }
 

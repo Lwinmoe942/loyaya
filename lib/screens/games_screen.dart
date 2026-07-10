@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:loyaya/screens/spin_wheel_screen.dart';
+import 'package:loyaya/screens/tic_tac_toe_screen.dart';
+import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/theme/app_theme.dart';
-import 'package:loyaya/widgets/coming_soon_dialog.dart';
 import 'package:loyaya/widgets/dinga_page_header.dart';
 
 class GamesScreen extends StatelessWidget {
-  const GamesScreen({super.key});
+  const GamesScreen({super.key, required this.api});
+
+  final ApiClient api;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +32,11 @@ class GamesScreen extends StatelessWidget {
                     icon: Icons.album_outlined,
                     iconColor: const Color(0xFFE91E63),
                     tags: const ['Reward Points', 'Ad Required'],
-                    onTap: () => showComingSoon(context, feature: 'Spin Wheel'),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => SpinWheelScreen(api: api),
+                      ),
+                    ),
                   ),
                   _GameCard(
                     title: 'Tic Tac Toe',
@@ -37,7 +45,11 @@ class GamesScreen extends StatelessWidget {
                     icon: Icons.grid_3x3,
                     iconColor: AppColors.accentBlue,
                     tags: const ['Win: +1 Point', 'Bonus: +1'],
-                    onTap: () => showComingSoon(context, feature: 'Tic Tac Toe'),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => TicTacToeScreen(api: api),
+                      ),
+                    ),
                   ),
                   _GameCard(
                     title: 'More Games Coming Soon',
