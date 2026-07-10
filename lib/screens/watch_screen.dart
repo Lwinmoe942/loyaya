@@ -38,7 +38,22 @@ class _WatchScreenState extends State<WatchScreen> {
   Future<void> _load() async {
     try {
       final items = await widget.api.watchVideos();
-      if (mounted) setState(() => _videos = items);
+      final history = await widget.api.history();
+      final claimed = <String>{};
+      for (final row in history) {
+        if (row['type']?.toString() == 'earn_watch_video') {
+          final ref = row['reference_id']?.toString();
+          if (ref != null && ref.isNotEmpty) claimed.add(ref);
+        }
+      }
+      if (mounted) {
+        setState(() {
+          _videos = items;
+          _claimed
+            ..clear()
+            ..addAll(claimed);
+        });
+      }
     } catch (_) {
       // empty
     } finally {
@@ -90,7 +105,11 @@ class _WatchScreenState extends State<WatchScreen> {
           _claimed.add(id);
           _watchingId = null;
         });
-        if (result['duplicate'] != true) {
+        if (result['duplicate'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('You already claimed this video.')),
+          );
+        } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(

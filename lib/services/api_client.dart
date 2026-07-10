@@ -455,6 +455,8 @@ String apiErrorMessage(String error) {
     'DAILY_LIMIT' => 'Daily win limit reached. Try again tomorrow.',
     'ALREADY_CLAIMED' => 'Points for this match were already claimed.',
     'INVALID_MATCH' => 'Invalid game session. Please start a new match.',
+    'INVALID_ACTION' => 'This reward is not available on the server yet.',
+    'Server Error' => 'Server error while claiming points. Please try again.',
     'INVALID_CREDENTIALS' => 'Invalid email or password.',
     'VALIDATION_ERROR' => 'Please check your input and try again.',
     'API_NOT_FOUND_CHECK_URL' =>

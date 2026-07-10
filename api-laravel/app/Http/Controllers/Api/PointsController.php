@@ -64,7 +64,7 @@ class PointsController extends Controller
 
             return response()->json(
                 ['error' => $e->getMessage()],
-                $map[$e->getMessage()] ?? 500,
+                $map[$e->getMessage()] ?? 400,
             );
         }
 

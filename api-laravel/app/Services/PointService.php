@@ -127,7 +127,7 @@ class PointService
         ?string $referenceId = null,
         ?string $idempotentKey = null,
     ): array {
-        return DB::transaction(function () use ($userId, $amount, $type, $referenceId, $idempotentKey) {
+        $result = DB::transaction(function () use ($userId, $amount, $type, $referenceId, $idempotentKey) {
             if ($idempotentKey) {
                 $existing = PointTransaction::query()
                     ->where('idempotent_key', $idempotentKey)
@@ -160,19 +160,29 @@ class PointService
 
             $this->syncUserTier($userId);
 
-            if ($amount > 0 && str_starts_with($type, 'earn_')) {
-                app(ReferralService::class)->rewardReferrer(
-                    $userId,
-                    $amount,
-                    $idempotentKey ?? "{$type}_{$userId}_".now()->timestamp,
-                );
-            }
-
             return [
                 'duplicate' => false,
                 'balance' => $newBalance,
             ];
         });
+
+        if (
+            ! $result['duplicate']
+            && $amount > 0
+            && str_starts_with($type, 'earn_')
+        ) {
+            try {
+                app(ReferralService::class)->rewardReferrer(
+                    $userId,
+                    $amount,
+                    $idempotentKey ?? "{$type}_{$userId}_".now()->timestamp,
+                );
+            } catch (\Throwable) {
+                // Referral bonus must never block the user's earn action.
+            }
+        }
+
+        return $result;
     }
 
     private function resolveTier(int $lifetimePoints): string
