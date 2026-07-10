@@ -30,8 +30,15 @@ class AdConfig {
     defaultValue: 'ca-app-pub-3940256099942544/1033173712',
   );
 
+  /// Google sample banner ad unit (Android).
+  static const String bannerUnitId = String.fromEnvironment(
+    'ADMOB_BANNER_UNIT_ID',
+    defaultValue: 'ca-app-pub-3940256099942544/6300978111',
+  );
+
   static bool get isTestMode =>
       androidAppId.contains('3940256099942544') ||
       rewardedUnitId.contains('3940256099942544') ||
-      interstitialUnitId.contains('3940256099942544');
+      interstitialUnitId.contains('3940256099942544') ||
+      bannerUnitId.contains('3940256099942544');
 }

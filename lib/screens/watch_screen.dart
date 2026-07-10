@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:loyaya/screens/watch_video_player_screen.dart';
+import 'package:loyaya/services/ad_service.dart';
 import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/theme/app_theme.dart';
 import 'package:loyaya/widgets/dinga_page_header.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class WatchScreen extends StatefulWidget {
   const WatchScreen({super.key, required this.api});
@@ -18,21 +19,13 @@ class WatchScreen extends StatefulWidget {
 class _WatchScreenState extends State<WatchScreen> {
   List<Map<String, dynamic>> _videos = [];
   bool _loading = true;
+  bool _starting = false;
   final Set<String> _claimed = {};
-  String? _watchingId;
-  int _watchProgress = 0;
-  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
     _load();
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
   }
 
   Future<void> _load() async {
@@ -63,74 +56,41 @@ class _WatchScreenState extends State<WatchScreen> {
 
   Future<void> _startWatch(Map<String, dynamic> video) async {
     final id = video['id']?.toString() ?? '';
-    final url = video['video_url']?.toString();
-    if (url != null && url.isNotEmpty) {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-    }
+    if (_claimed.contains(id) || _starting) return;
 
-    if (_claimed.contains(id)) return;
+    setState(() => _starting = true);
 
-    _timer?.cancel();
-    setState(() {
-      _watchingId = id;
-      _watchProgress = 0;
-    });
-
-    final target = video['watch_seconds'] as int? ?? 20;
-    _timer = Timer.periodic(const Duration(seconds: 1), (t) async {
-      if (!mounted) {
-        t.cancel();
-        return;
-      }
-      final next = _watchProgress + 1;
-      setState(() => _watchProgress = next);
-      if (next >= target) {
-        t.cancel();
-        await _claim(video);
-      }
-    });
-  }
-
-  Future<void> _claim(Map<String, dynamic> video) async {
-    final id = video['id']?.toString() ?? '';
-    if (_claimed.contains(id)) return;
-
-    try {
-      final result = await widget.api.earnWatchVideo(id);
-      if (mounted) {
-        setState(() {
-          _claimed.add(id);
-          _watchingId = null;
-        });
-        if (result['duplicate'] == true) {
+    final rewarded = await AdService.instance.showRewarded(
+      onAdNotReady: () {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('You already claimed this video.')),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Earned +${video['points'] ?? 3} points for watching!',
-              ),
-            ),
+            const SnackBar(content: Text('Ad is loading. Please try again.')),
           );
         }
-      }
-    } on ApiException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(apiErrorMessage(e.error))),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not claim points.')),
-        );
-      }
+      },
+    );
+
+    if (!mounted) return;
+    if (!rewarded) {
+      setState(() => _starting = false);
+      return;
+    }
+
+    final completed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => WatchVideoPlayerScreen(
+          api: widget.api,
+          video: video,
+        ),
+      ),
+    );
+
+    if (!mounted) return;
+    setState(() => _starting = false);
+
+    if (completed == true) {
+      setState(() => _claimed.add(id));
+      await _load();
     }
   }
 
@@ -148,7 +108,7 @@ class _WatchScreenState extends State<WatchScreen> {
               child: DingaPageHeader(
                 title: 'Watch & Get Points',
                 subtitle:
-                    'Watch videos and claim points when the timer completes.',
+                    'Watch the reward ad, then watch the video for at least 20 seconds.',
                 onBack: () => Navigator.pop(context, _claimed.isNotEmpty),
                 titleColor: Colors.white,
                 subtitleColor: Colors.white70,
@@ -158,22 +118,30 @@ class _WatchScreenState extends State<WatchScreen> {
           Expanded(
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
-                : ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      for (final video in _videos)
-                        _WatchCard(
-                          title: video['title']?.toString() ?? '',
-                          points: video['points'] as int? ?? 3,
-                          watchSec: video['watch_seconds'] as int? ?? 20,
-                          claimed: _claimed.contains(video['id']?.toString()),
-                          progress: _watchingId == video['id']?.toString()
-                              ? _watchProgress
-                              : 0,
-                          onTap: () => _startWatch(video),
+                : _videos.isEmpty
+                    ? const Center(
+                        child: Text(
+                          'No videos available right now.',
+                          style: TextStyle(color: AppColors.textSecondary),
                         ),
-                    ],
-                  ),
+                      )
+                    : ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          for (final video in _videos)
+                            _WatchCard(
+                              title: video['title']?.toString() ?? '',
+                              points: video['points'] as int? ?? 3,
+                              watchSec: video['watch_seconds'] as int? ?? 20,
+                              thumbUrl: youtubeThumbUrl(
+                                video['video_url']?.toString(),
+                              ),
+                              claimed: _claimed.contains(video['id']?.toString()),
+                              loading: _starting,
+                              onTap: () => _startWatch(video),
+                            ),
+                        ],
+                      ),
           ),
         ],
       ),
@@ -186,104 +154,136 @@ class _WatchCard extends StatelessWidget {
     required this.title,
     required this.points,
     required this.watchSec,
+    required this.thumbUrl,
     required this.claimed,
-    required this.progress,
+    required this.loading,
     required this.onTap,
   });
 
   final String title;
   final int points;
   final int watchSec;
+  final String thumbUrl;
   final bool claimed;
-  final int progress;
+  final bool loading;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: claimed ? null : onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: 140,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.play_circle_fill, size: 48, color: Colors.white),
-              ),
-              const SizedBox(height: 12),
-              Row(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
+                  Image.network(
+                    thumbUrl,
+                    height: 160,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 160,
+                      color: Colors.grey.shade300,
+                      child: const Icon(Icons.play_circle_fill, size: 48),
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF8E1),
-                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.black.withValues(alpha: 0.35),
+                      shape: BoxShape.circle,
                     ),
-                    child: Text(
-                      '$points Points',
-                      style: TextStyle(
-                        color: Colors.amber.shade900,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
+                    padding: const EdgeInsets.all(8),
+                    child: const Icon(
+                      Icons.play_arrow_rounded,
+                      color: Colors.white,
+                      size: 42,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Watch Time', style: TextStyle(color: AppColors.textSecondary)),
-                  Text(
-                    claimed
-                        ? '$watchSec / $watchSec sec'
-                        : '$progress / $watchSec sec',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              if (claimed)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE8F5E9),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'Claimed',
-                    style: TextStyle(
-                      color: AppColors.accentGreen,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
-                )
-              else
-                FilledButton(
-                  onPressed: onTap,
-                  child: const Text('Watch Now'),
                 ),
-            ],
-          ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF8E1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '$points Points',
+                    style: TextStyle(
+                      color: Colors.amber.shade900,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Minimum watch',
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+                Text(
+                  '$watchSec seconds',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (claimed)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5E9),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                alignment: Alignment.center,
+                child: const Text(
+                  'Claimed',
+                  style: TextStyle(
+                    color: AppColors.accentGreen,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              )
+            else
+              FilledButton(
+                onPressed: loading ? null : onTap,
+                child: loading
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text('Watch Ad & Play'),
+              ),
+          ],
         ),
       ),
     );
