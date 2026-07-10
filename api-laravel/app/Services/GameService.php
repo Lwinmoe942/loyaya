@@ -6,7 +6,8 @@ use App\Models\PointTransaction;
 
 class GameService
 {
-    private const GAME_COOLDOWN_MINUTES = 5;
+    private const SCRATCH_COOLDOWN_MINUTES = 5;
+    private const TTT_LOSS_COOLDOWN_SECONDS = 60;
 
     public function __construct(private readonly PointService $points) {}
 
@@ -74,20 +75,23 @@ class GameService
     }
 
     /** @return array{points: int, balance: int, duplicate: bool} */
-    public function ticTacToeWin(int $userId, string $matchId): array
+    public function ticTacToeWin(int $userId, string $matchId, string $difficulty): array
     {
         $matchId = $this->normalizeMatchId($matchId);
+        $difficulty = $this->normalizeDifficulty($difficulty);
         $key = 'ttt_win_'.$userId.'_'.$matchId;
 
-        if ($this->ticTacToeCooldownSeconds($userId) > 0) {
-            throw new \RuntimeException('TIC_TAC_TOE_COOLDOWN');
+        if ($this->ticTacToeLossCooldownSeconds($userId) > 0) {
+            throw new \RuntimeException('TIC_TAC_TOE_LOSS_COOLDOWN');
         }
+
+        $points = $this->pointsForDifficulty($difficulty);
 
         $result = $this->points->addTransaction(
             $userId,
-            1,
+            $points,
             'earn_tic_tac_toe',
-            $matchId,
+            $matchId.'_'.$difficulty,
             $key,
         );
 
@@ -96,9 +100,28 @@ class GameService
         }
 
         return [
-            'points' => 1,
+            'points' => $points,
             'balance' => $result['balance'],
             'duplicate' => false,
+        ];
+    }
+
+    /** @return array{loss_cooldown_seconds: int} */
+    public function recordTicTacToeLoss(int $userId, string $matchId): array
+    {
+        $matchId = $this->normalizeMatchId($matchId);
+        $key = 'ttt_loss_'.$userId.'_'.$matchId;
+
+        $this->points->addTransaction(
+            $userId,
+            0,
+            'tic_tac_toe_loss',
+            $matchId,
+            $key,
+        );
+
+        return [
+            'loss_cooldown_seconds' => self::TTT_LOSS_COOLDOWN_SECONDS,
         ];
     }
 
@@ -129,12 +152,27 @@ class GameService
 
     public function scratchCooldownSeconds(int $userId): int
     {
-        return $this->cooldownSeconds($userId, 'earn_scratch');
+        return $this->cooldownSeconds($userId, 'earn_scratch', self::SCRATCH_COOLDOWN_MINUTES * 60);
     }
 
-    public function ticTacToeCooldownSeconds(int $userId): int
+    public function ticTacToeLossCooldownSeconds(int $userId): int
     {
-        return $this->cooldownSeconds($userId, 'earn_tic_tac_toe');
+        $last = PointTransaction::query()
+            ->where('user_id', $userId)
+            ->where('type', 'tic_tac_toe_loss')
+            ->orderByDesc('created_at')
+            ->value('created_at');
+
+        if ($last === null) {
+            return 0;
+        }
+
+        $availableAt = \Carbon\Carbon::parse($last)->addSeconds(self::TTT_LOSS_COOLDOWN_SECONDS);
+        if (now()->gte($availableAt)) {
+            return 0;
+        }
+
+        return (int) now()->diffInSeconds($availableAt);
     }
 
     public function spinPlayedToday(int $userId): bool
@@ -142,7 +180,7 @@ class GameService
         return $this->hasIdempotentKey('spin_wheel_'.$userId.'_'.now()->toDateString());
     }
 
-    private function cooldownSeconds(int $userId, string $type): int
+    private function cooldownSeconds(int $userId, string $type, int $seconds): int
     {
         $last = PointTransaction::query()
             ->where('user_id', $userId)
@@ -154,12 +192,28 @@ class GameService
             return 0;
         }
 
-        $availableAt = \Carbon\Carbon::parse($last)->addMinutes(self::GAME_COOLDOWN_MINUTES);
+        $availableAt = \Carbon\Carbon::parse($last)->addSeconds($seconds);
         if (now()->gte($availableAt)) {
             return 0;
         }
 
         return (int) now()->diffInSeconds($availableAt);
+    }
+
+    private function pointsForDifficulty(string $difficulty): int
+    {
+        return match ($difficulty) {
+            'hard' => 2,
+            'super_hard' => 3,
+            default => 1,
+        };
+    }
+
+    private function normalizeDifficulty(string $difficulty): string
+    {
+        return in_array($difficulty, ['easy', 'hard', 'super_hard'], true)
+            ? $difficulty
+            : 'easy';
     }
 
     private function hasIdempotentKey(string $key): bool

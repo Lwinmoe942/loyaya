@@ -56,7 +56,7 @@ class _GamesScreenState extends State<GamesScreen> with EntryAdMixin {
                         'Improve your brain and get points. Get extra points after watch ad.',
                     icon: Icons.grid_3x3,
                     iconColor: AppColors.accentBlue,
-                    tags: const ['Win: +1 Point', '5 min wait', 'Bonus: +1'],
+                    tags: const ['Easy +1', 'Hard +2', 'Super Hard +3'],
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => TicTacToeScreen(api: widget.api),

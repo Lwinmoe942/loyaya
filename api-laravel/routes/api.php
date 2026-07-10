@@ -31,6 +31,7 @@ Route::middleware('api.token')->group(function () {
     Route::post('/games/scratch', [GamesController::class, 'scratch']);
     Route::post('/games/spin', [GamesController::class, 'spin']);
     Route::post('/games/tic-tac-toe', [GamesController::class, 'ticTacToe']);
+    Route::post('/games/tic-tac-toe/loss', [GamesController::class, 'ticTacToeLoss']);
     Route::post('/games/tic-tac-toe/bonus', [GamesController::class, 'ticTacToeBonus']);
 });
 

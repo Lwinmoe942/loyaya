@@ -163,6 +163,19 @@ class AdService {
     return completer.future;
   }
 
+  Future<bool> showRewardedMultiple(
+    int count, {
+    void Function(int current, int total)? onProgress,
+    void Function()? onAdNotReady,
+  }) async {
+    for (var i = 0; i < count; i++) {
+      onProgress?.call(i + 1, count);
+      final rewarded = await showRewarded(onAdNotReady: onAdNotReady);
+      if (!rewarded) return false;
+    }
+    return true;
+  }
+
   void dispose() {
     _rewardedAd?.dispose();
     _rewardedAd = null;

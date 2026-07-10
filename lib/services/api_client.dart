@@ -236,9 +236,24 @@ class ApiClient {
     return _parse(res);
   }
 
-  Future<Map<String, dynamic>> ticTacToeWin(String matchId) async {
+  Future<Map<String, dynamic>> ticTacToeWin(
+    String matchId, {
+    required String difficulty,
+  }) async {
     final res = await _post(
       Uri.parse('${ApiConfig.baseUrl}/api/games/tic-tac-toe'),
+      headers: _headers,
+      body: jsonEncode({
+        'match_id': matchId,
+        'difficulty': difficulty,
+      }),
+    );
+    return _parse(res);
+  }
+
+  Future<Map<String, dynamic>> ticTacToeLoss(String matchId) async {
+    final res = await _post(
+      Uri.parse('${ApiConfig.baseUrl}/api/games/tic-tac-toe/loss'),
       headers: _headers,
       body: jsonEncode({'match_id': matchId}),
     );
@@ -361,7 +376,7 @@ String apiErrorMessage(String error) {
     'MAX_USES' => 'This gift code has reached its use limit.',
     'ALREADY_PLAYED_TODAY' => 'You already played this game today. Come back tomorrow!',
     'SCRATCH_COOLDOWN' => 'Please wait 5 minutes before scratching again.',
-    'TIC_TAC_TOE_COOLDOWN' => 'Please wait 5 minutes before playing Tic Tac Toe again.',
+    'TIC_TAC_TOE_LOSS_COOLDOWN' => 'Please wait before playing again.',
     'DAILY_LIMIT' => 'Daily win limit reached. Try again tomorrow.',
     'ALREADY_CLAIMED' => 'Points for this match were already claimed.',
     'INVALID_MATCH' => 'Invalid game session. Please start a new match.',

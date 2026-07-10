@@ -18,8 +18,7 @@ class GamesController extends Controller
         return response()->json([
             'scratch_cooldown_seconds' => $this->games->scratchCooldownSeconds($user->id),
             'scratch_available' => $this->games->scratchCooldownSeconds($user->id) === 0,
-            'tic_tac_toe_cooldown_seconds' => $this->games->ticTacToeCooldownSeconds($user->id),
-            'tic_tac_toe_available' => $this->games->ticTacToeCooldownSeconds($user->id) === 0,
+            'tic_tac_toe_loss_cooldown_seconds' => $this->games->ticTacToeLossCooldownSeconds($user->id),
             'spin_played_today' => $this->games->spinPlayedToday($user->id),
         ]);
     }
@@ -69,15 +68,20 @@ class GamesController extends Controller
     {
         $data = $request->validate([
             'match_id' => ['required', 'string', 'max:80'],
+            'difficulty' => ['required', 'string', 'in:easy,hard,super_hard'],
         ]);
 
         $user = $request->attributes->get('auth_user');
 
         try {
-            $result = $this->games->ticTacToeWin($user->id, $data['match_id']);
+            $result = $this->games->ticTacToeWin(
+                $user->id,
+                $data['match_id'],
+                $data['difficulty'],
+            );
         } catch (\RuntimeException $e) {
             $code = match ($e->getMessage()) {
-                'TIC_TAC_TOE_COOLDOWN' => 429,
+                'TIC_TAC_TOE_LOSS_COOLDOWN' => 429,
                 'ALREADY_CLAIMED' => 409,
                 default => 400,
             };
@@ -88,8 +92,25 @@ class GamesController extends Controller
         return response()->json([
             'points' => $result['points'],
             'balance' => $result['balance'],
-            'message' => 'You won +1 point!',
+            'message' => "You won +{$result['points']} points!",
         ]);
+    }
+
+    public function ticTacToeLoss(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'match_id' => ['required', 'string', 'max:80'],
+        ]);
+
+        $user = $request->attributes->get('auth_user');
+
+        try {
+            $result = $this->games->recordTicTacToeLoss($user->id, $data['match_id']);
+        } catch (\RuntimeException $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+
+        return response()->json($result);
     }
 
     public function ticTacToeBonus(Request $request): JsonResponse
