@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -16,8 +17,13 @@ class TicTacToeScreen extends StatefulWidget {
 }
 
 class _TicTacToeScreenState extends State<TicTacToeScreen> {
+  static const _cooldownMinutes = 5;
+
   late String _matchId;
   final List<String?> _board = List.filled(9, null);
+  bool _loading = true;
+  int _cooldownSeconds = 0;
+  Timer? _cooldownTimer;
   bool _userTurn = true;
   bool _gameOver = false;
   bool _claiming = false;
@@ -25,15 +31,68 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
   bool _winClaimed = false;
   String? _status;
 
+  bool get _onCooldown => _cooldownSeconds > 0;
+
   @override
   void initState() {
     super.initState();
-    _matchId = '${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(99999)}';
+    _matchId = _newMatchId();
+    _loadStatus();
+  }
+
+  @override
+  void dispose() {
+    _cooldownTimer?.cancel();
+    super.dispose();
+  }
+
+  String _newMatchId() =>
+      '${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(99999)}';
+
+  Future<void> _loadStatus() async {
+    setState(() => _loading = true);
+    try {
+      final status = await widget.api.gamesStatus();
+      if (mounted) {
+        _applyCooldown(status['tic_tac_toe_cooldown_seconds'] as int? ?? 0);
+        setState(() => _loading = false);
+      }
+    } on ApiException catch (e) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _status = apiErrorMessage(e.error);
+        });
+      }
+    }
+  }
+
+  void _applyCooldown(int seconds) {
+    _cooldownTimer?.cancel();
+    _cooldownSeconds = seconds.clamp(0, _cooldownMinutes * 60);
+    if (_cooldownSeconds <= 0) return;
+
+    _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      setState(() {
+        _cooldownSeconds = (_cooldownSeconds - 1).clamp(0, _cooldownMinutes * 60);
+      });
+      if (_cooldownSeconds <= 0) {
+        _cooldownTimer?.cancel();
+      }
+    });
+  }
+
+  String _formatCooldown(int totalSeconds) {
+    final minutes = totalSeconds ~/ 60;
+    final seconds = totalSeconds % 60;
+    return '${minutes}m ${seconds.toString().padLeft(2, '0')}s';
   }
 
   void _reset() {
+    if (_onCooldown) return;
     setState(() {
-      _matchId = '${DateTime.now().millisecondsSinceEpoch}_${Random().nextInt(99999)}';
+      _matchId = _newMatchId();
       _board.fillRange(0, 9, null);
       _userTurn = true;
       _gameOver = false;
@@ -44,7 +103,9 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
   }
 
   void _tapCell(int index) {
-    if (_gameOver || !_userTurn || _board[index] != null) return;
+    if (_onCooldown || _loading || _gameOver || !_userTurn || _board[index] != null) {
+      return;
+    }
 
     setState(() {
       _board[index] = 'X';
@@ -153,10 +214,14 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
           _winClaimed = true;
           _status = 'You won! +1 point added.';
         });
+        _applyCooldown(_cooldownMinutes * 60);
       }
     } on ApiException catch (e) {
       if (mounted) {
         setState(() => _status = apiErrorMessage(e.error));
+        if (e.error == 'TIC_TAC_TOE_COOLDOWN') {
+          _loadStatus();
+        }
       }
     } finally {
       if (mounted) setState(() => _claiming = false);
@@ -212,8 +277,45 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
             children: [
               DingaPageHeader(
                 title: 'Tic Tac Toe',
-                subtitle: 'Beat the AI. Win +1 pt (max 5/day). Bonus +1 after ad.',
+                subtitle:
+                    'Beat the AI. Win +1 pt. Wait $_cooldownMinutes minutes between wins. Bonus +1 after ad.',
                 onBack: () => Navigator.pop(context),
+              ),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Game Status',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      if (_loading)
+                        const LinearProgressIndicator()
+                      else if (_onCooldown)
+                        Text(
+                          'Next game in ${_formatCooldown(_cooldownSeconds)}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        )
+                      else
+                        const Text(
+                          'You can play now',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               AspectRatio(
@@ -228,11 +330,12 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
                   itemCount: 9,
                   itemBuilder: (context, index) {
                     final mark = _board[index];
+                    final enabled = !_onCooldown && !_loading && !_gameOver;
                     return Material(
-                      color: Colors.white,
+                      color: enabled ? Colors.white : Colors.grey.shade200,
                       borderRadius: BorderRadius.circular(12),
                       child: InkWell(
-                        onTap: () => _tapCell(index),
+                        onTap: enabled ? () => _tapCell(index) : null,
                         borderRadius: BorderRadius.circular(12),
                         child: Center(
                           child: Text(
@@ -278,7 +381,7 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
                         )
                       : const Text('Watch Ad for Bonus +1'),
                 ),
-              if (_gameOver) ...[
+              if (_gameOver && !_onCooldown) ...[
                 const SizedBox(height: 8),
                 OutlinedButton(
                   onPressed: _reset,

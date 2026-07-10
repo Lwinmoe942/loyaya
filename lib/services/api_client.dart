@@ -361,6 +361,7 @@ String apiErrorMessage(String error) {
     'MAX_USES' => 'This gift code has reached its use limit.',
     'ALREADY_PLAYED_TODAY' => 'You already played this game today. Come back tomorrow!',
     'SCRATCH_COOLDOWN' => 'Please wait 5 minutes before scratching again.',
+    'TIC_TAC_TOE_COOLDOWN' => 'Please wait 5 minutes before playing Tic Tac Toe again.',
     'DAILY_LIMIT' => 'Daily win limit reached. Try again tomorrow.',
     'ALREADY_CLAIMED' => 'Points for this match were already claimed.',
     'INVALID_MATCH' => 'Invalid game session. Please start a new match.',

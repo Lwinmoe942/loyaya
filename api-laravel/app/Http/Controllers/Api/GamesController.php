@@ -18,6 +18,8 @@ class GamesController extends Controller
         return response()->json([
             'scratch_cooldown_seconds' => $this->games->scratchCooldownSeconds($user->id),
             'scratch_available' => $this->games->scratchCooldownSeconds($user->id) === 0,
+            'tic_tac_toe_cooldown_seconds' => $this->games->ticTacToeCooldownSeconds($user->id),
+            'tic_tac_toe_available' => $this->games->ticTacToeCooldownSeconds($user->id) === 0,
             'spin_played_today' => $this->games->spinPlayedToday($user->id),
         ]);
     }
@@ -75,7 +77,7 @@ class GamesController extends Controller
             $result = $this->games->ticTacToeWin($user->id, $data['match_id']);
         } catch (\RuntimeException $e) {
             $code = match ($e->getMessage()) {
-                'DAILY_LIMIT' => 429,
+                'TIC_TAC_TOE_COOLDOWN' => 429,
                 'ALREADY_CLAIMED' => 409,
                 default => 400,
             };

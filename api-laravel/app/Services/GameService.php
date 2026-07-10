@@ -6,7 +6,7 @@ use App\Models\PointTransaction;
 
 class GameService
 {
-    private const SCRATCH_COOLDOWN_MINUTES = 5;
+    private const GAME_COOLDOWN_MINUTES = 5;
 
     public function __construct(private readonly PointService $points) {}
 
@@ -79,8 +79,8 @@ class GameService
         $matchId = $this->normalizeMatchId($matchId);
         $key = 'ttt_win_'.$userId.'_'.$matchId;
 
-        if ($this->countTodayByType($userId, 'earn_tic_tac_toe') >= 5) {
-            throw new \RuntimeException('DAILY_LIMIT');
+        if ($this->ticTacToeCooldownSeconds($userId) > 0) {
+            throw new \RuntimeException('TIC_TAC_TOE_COOLDOWN');
         }
 
         $result = $this->points->addTransaction(
@@ -129,22 +129,12 @@ class GameService
 
     public function scratchCooldownSeconds(int $userId): int
     {
-        $last = PointTransaction::query()
-            ->where('user_id', $userId)
-            ->where('type', 'earn_scratch')
-            ->orderByDesc('created_at')
-            ->value('created_at');
+        return $this->cooldownSeconds($userId, 'earn_scratch');
+    }
 
-        if ($last === null) {
-            return 0;
-        }
-
-        $availableAt = \Carbon\Carbon::parse($last)->addMinutes(self::SCRATCH_COOLDOWN_MINUTES);
-        if (now()->gte($availableAt)) {
-            return 0;
-        }
-
-        return (int) now()->diffInSeconds($availableAt);
+    public function ticTacToeCooldownSeconds(int $userId): int
+    {
+        return $this->cooldownSeconds($userId, 'earn_tic_tac_toe');
     }
 
     public function spinPlayedToday(int $userId): bool
@@ -152,20 +142,31 @@ class GameService
         return $this->hasIdempotentKey('spin_wheel_'.$userId.'_'.now()->toDateString());
     }
 
+    private function cooldownSeconds(int $userId, string $type): int
+    {
+        $last = PointTransaction::query()
+            ->where('user_id', $userId)
+            ->where('type', $type)
+            ->orderByDesc('created_at')
+            ->value('created_at');
+
+        if ($last === null) {
+            return 0;
+        }
+
+        $availableAt = \Carbon\Carbon::parse($last)->addMinutes(self::GAME_COOLDOWN_MINUTES);
+        if (now()->gte($availableAt)) {
+            return 0;
+        }
+
+        return (int) now()->diffInSeconds($availableAt);
+    }
+
     private function hasIdempotentKey(string $key): bool
     {
         return PointTransaction::query()
             ->where('idempotent_key', $key)
             ->exists();
-    }
-
-    private function countTodayByType(int $userId, string $type): int
-    {
-        return (int) PointTransaction::query()
-            ->where('user_id', $userId)
-            ->where('type', $type)
-            ->whereDate('created_at', now()->toDateString())
-            ->count();
     }
 
     private function normalizeMatchId(string $matchId): string
