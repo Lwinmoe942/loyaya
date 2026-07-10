@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AdminWithdrawController;
+use App\Http\Controllers\Api\AiController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ContentController;
@@ -33,6 +34,10 @@ Route::middleware('api.token')->group(function () {
     Route::post('/games/tic-tac-toe', [GamesController::class, 'ticTacToe']);
     Route::post('/games/tic-tac-toe/loss', [GamesController::class, 'ticTacToeLoss']);
     Route::post('/games/tic-tac-toe/bonus', [GamesController::class, 'ticTacToeBonus']);
+    Route::get('/ai/history', [AiController::class, 'history']);
+    Route::post('/ai/estimate', [AiController::class, 'estimate']);
+    Route::post('/ai/record-to-text', [AiController::class, 'recordToText']);
+    Route::post('/ai/text-to-voice', [AiController::class, 'textToVoice']);
 });
 
 Route::post('/withdraw/request', [WithdrawController::class, 'request']);

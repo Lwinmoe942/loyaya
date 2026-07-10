@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:loyaya/config/api_config.dart';
+import 'package:loyaya/models/ai_history_item.dart';
 
 class ApiClient {
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
@@ -269,6 +270,55 @@ class ApiClient {
     return _parse(res);
   }
 
+  Future<List<AiHistoryItem>> aiHistory() async {
+    final res = await _get(
+      Uri.parse('${ApiConfig.baseUrl}/api/ai/history'),
+      headers: _headers,
+    );
+    final data = _parse(res);
+    final list = data['items'] as List<dynamic>? ?? [];
+    return list
+        .cast<Map<String, dynamic>>()
+        .map(AiHistoryItem.fromJson)
+        .toList();
+  }
+
+  Future<Map<String, dynamic>> aiRecordToText({
+    required String text,
+    required int durationSeconds,
+    required String language,
+    required String requestId,
+  }) async {
+    final res = await _post(
+      Uri.parse('${ApiConfig.baseUrl}/api/ai/record-to-text'),
+      headers: _headers,
+      body: jsonEncode({
+        'text': text,
+        'duration_seconds': durationSeconds,
+        'language': language,
+        'request_id': requestId,
+      }),
+    );
+    return _parse(res);
+  }
+
+  Future<Map<String, dynamic>> aiTextToVoice({
+    required String text,
+    required String voice,
+    required String requestId,
+  }) async {
+    final res = await _post(
+      Uri.parse('${ApiConfig.baseUrl}/api/ai/text-to-voice'),
+      headers: _headers,
+      body: jsonEncode({
+        'text': text,
+        'voice': voice,
+        'request_id': requestId,
+      }),
+    );
+    return _parse(res);
+  }
+
   Future<T> _withRetry<T>(Future<T> Function() action) async {
     Object? lastError;
     for (var attempt = 0; attempt < 2; attempt++) {
@@ -377,6 +427,9 @@ String apiErrorMessage(String error) {
     'ALREADY_PLAYED_TODAY' => 'You already played this game today. Come back tomorrow!',
     'SCRATCH_COOLDOWN' => 'Please wait 5 minutes before scratching again.',
     'TIC_TAC_TOE_LOSS_COOLDOWN' => 'Please wait before playing again.',
+    'INSUFFICIENT_POINTS' => 'Not enough points for this AI action.',
+    'EMPTY_TEXT' => 'Please enter some text first.',
+    'INVALID_REQUEST' => 'Invalid request. Please try again.',
     'DAILY_LIMIT' => 'Daily win limit reached. Try again tomorrow.',
     'ALREADY_CLAIMED' => 'Points for this match were already claimed.',
     'INVALID_MATCH' => 'Invalid game session. Please start a new match.',

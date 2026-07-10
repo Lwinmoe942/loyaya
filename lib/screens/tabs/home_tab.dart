@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loyaya/screens/ai_tools_screen.dart';
 import 'package:loyaya/screens/games_screen.dart';
 import 'package:loyaya/screens/math_quiz_list_screen.dart';
 import 'package:loyaya/screens/redeem_gift_screen.dart';
@@ -196,7 +197,7 @@ class _HomeTabState extends State<HomeTab> {
                   label: 'AI Tools',
                   icon: Icons.smart_toy_outlined,
                   color: const Color(0xFF29B6F6),
-                  onTap: () => showComingSoon(context, feature: 'AI Tools'),
+                  onTap: () => _open(AiToolsScreen(api: widget.api)),
                 ),
                 EarnGridItem(
                   label: 'Watch',
