@@ -13,7 +13,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->trustProxies(at: '*');
+        $middleware->trustProxies(
+            at: '*',
+            headers: Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO,
+        );
 
         $middleware->alias([
             'api.token' => \App\Http\Middleware\ApiTokenAuth::class,
@@ -26,4 +32,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, Request $request) {
+            if ($request->is('exchange') || $request->is('exchange/*')) {
+                return redirect()
+                    ->route('exchange.index')
+                    ->with('error', 'Session သက်တမ်းကုန်ပါပြီ။ Page ကို refresh လုပ်ပြီး ထပ်စမ်းပါ။');
+            }
+
+            return null;
+        });
     })->create();

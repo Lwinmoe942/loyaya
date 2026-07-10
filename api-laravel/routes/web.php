@@ -14,7 +14,7 @@ Route::get('/', function () {
 
 Route::get('/exchange', [ExchangeController::class, 'index'])->name('exchange.index');
 Route::post('/exchange', [ExchangeController::class, 'submit'])->name('exchange.submit');
-Route::get('/exchange/status', [ExchangeController::class, 'statusForm'])->name('exchange.status.form');
+Route::get('/exchange/status', [ExchangeController::class, 'status'])->name('exchange.status.form');
 Route::post('/exchange/status', [ExchangeController::class, 'statusCheck'])->name('exchange.status.check');
 
 Route::get('/robots.txt', function () {

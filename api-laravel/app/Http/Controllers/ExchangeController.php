@@ -54,10 +54,18 @@ class ExchangeController extends Controller
             return back()->withInput()->with('error', 'User ID မတွေ့ပါ။ App ထဲက ID ကို ပြန်စစ်ပါ။');
         }
 
-        $points = (int) $data['points'];
+        $min = (int) config('lotaya.min_withdraw_points', 500);
         $balance = $this->points->getBalance($user->id);
+        if ($balance < $min) {
+            return back()->withInput()->with(
+                'error',
+                "လက်ရှိ point {$balance} သာ ရှိပါသည်။ အနည်းဆုံး {$min} points လိုအပ်ပါသည်။",
+            );
+        }
+
+        $points = (int) $data['points'];
         if ($balance < $points) {
-            return back()->withInput()->with('error', 'Point မလုံလောက်ပါ။ လက်ရှိ: '.$balance);
+            return back()->withInput()->with('error', "Point မလုံလောက်ပါ။ လက်ရှိ: {$balance}");
         }
 
         $tier = $this->points->syncUserTier($user->id);
@@ -82,26 +90,42 @@ class ExchangeController extends Controller
             ->with('success', "တောင်းဆိုမှု #{$withdraw->id} အောင်မြင်ပါပြီ။ {$points} pts = {$mmkAmount} MMK (rate {$rate})");
     }
 
-    public function statusForm(): View
+    public function status(Request $request): View
     {
-        return view('exchange.status');
+        $email = $request->query('email');
+        $requests = null;
+
+        if (is_string($email) && trim($email) !== '') {
+            $email = strtolower(trim($email));
+            if (! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                return view('exchange.status', [
+                    'email' => $email,
+                    'statusError' => 'Email မှန်ကန်စွာ ထည့်ပါ။',
+                ]);
+            }
+
+            $requests = WithdrawRequest::query()
+                ->where('email', $email)
+                ->orderByDesc('id')
+                ->limit(20)
+                ->get();
+        }
+
+        return view('exchange.status', [
+            'email' => $email,
+            'requests' => $requests,
+        ]);
     }
 
+    /** @deprecated Use GET /exchange/status?email= instead */
     public function statusCheck(Request $request): View
     {
-        $data = $request->validate([
+        $request->validate([
             'email' => ['required', 'email', 'max:190'],
         ]);
 
-        $requests = WithdrawRequest::query()
-            ->where('email', strtolower($data['email']))
-            ->orderByDesc('id')
-            ->limit(20)
-            ->get();
-
-        return view('exchange.status', [
-            'email' => $data['email'],
-            'requests' => $requests,
+        return redirect()->route('exchange.status.form', [
+            'email' => $request->input('email'),
         ]);
     }
 

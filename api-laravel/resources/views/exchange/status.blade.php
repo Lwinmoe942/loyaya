@@ -17,8 +17,7 @@
     <h1>Withdraw Status</h1>
     <p class="lead">တောင်းဆိုထားသော withdraw များကို email ဖြင့် စစ်ဆေးပါ။</p>
 
-    <form method="post" action="{{ route('exchange.status.check') }}">
-        @csrf
+    <form method="get" action="{{ route('exchange.status.form') }}">
         <div class="field">
             <label for="email">Email</label>
             <input id="email" name="email" type="email" value="{{ $email ?? old('email') }}" required>
@@ -28,6 +27,10 @@
             <a class="btn btn-outline" href="{{ route('exchange.index') }}">Point Exchange</a>
         </div>
     </form>
+
+    @isset($statusError)
+        <div class="empty-state" style="margin-top:16px;">{{ $statusError }}</div>
+    @endisset
 
     @isset($requests)
         @if ($requests->isEmpty())

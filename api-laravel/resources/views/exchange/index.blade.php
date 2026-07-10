@@ -144,8 +144,7 @@
             <span class="icon icon-green" aria-hidden="true">🔍</span>
             <h2 style="margin:0;">တောင်းဆိုချက်အခြေအနေ စစ်ဆေးရန်</h2>
         </div>
-        <form method="post" action="{{ route('exchange.status.check') }}">
-            @csrf
+        <form method="get" action="{{ route('exchange.status.form') }}">
             <div class="field">
                 <label for="status_email">Email</label>
                 <input id="status_email" name="email" type="email" placeholder="you@email.com" required>
