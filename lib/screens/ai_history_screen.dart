@@ -4,7 +4,6 @@ import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/theme/app_theme.dart';
 import 'package:loyaya/widgets/ai_hero_card.dart';
 import 'package:loyaya/widgets/dinga_page_header.dart';
-import 'package:loyaya/widgets/entry_ad_mixin.dart';
 
 class AiHistoryScreen extends StatefulWidget {
   const AiHistoryScreen({super.key, required this.api});
@@ -15,7 +14,7 @@ class AiHistoryScreen extends StatefulWidget {
   State<AiHistoryScreen> createState() => _AiHistoryScreenState();
 }
 
-class _AiHistoryScreenState extends State<AiHistoryScreen> with EntryAdMixin {
+class _AiHistoryScreenState extends State<AiHistoryScreen> {
   bool _loading = true;
   String? _error;
   List<AiHistoryItem> _items = [];
@@ -23,7 +22,6 @@ class _AiHistoryScreenState extends State<AiHistoryScreen> with EntryAdMixin {
   @override
   void initState() {
     super.initState();
-    initEntryAd();
     _load();
   }
 

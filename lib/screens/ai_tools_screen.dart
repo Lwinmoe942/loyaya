@@ -106,7 +106,7 @@ class _AiToolsScreenState extends State<AiToolsScreen> with EntryAdMixin {
               bullets: [
                 'Record to Text uses points based on audio duration.',
                 'Text to Voice uses points based on text length.',
-                'Some AI actions may require watching a rewarded ad before running.',
+                'Some AI actions require watching 3 reward ads before running.',
                 'Your finished results will appear in AI History.',
               ],
             ),

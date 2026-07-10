@@ -7,7 +7,6 @@ import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/theme/app_theme.dart';
 import 'package:loyaya/widgets/ai_hero_card.dart';
 import 'package:loyaya/widgets/dinga_page_header.dart';
-import 'package:loyaya/widgets/entry_ad_mixin.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 class AiRecordToTextScreen extends StatefulWidget {
@@ -19,8 +18,9 @@ class AiRecordToTextScreen extends StatefulWidget {
   State<AiRecordToTextScreen> createState() => _AiRecordToTextScreenState();
 }
 
-class _AiRecordToTextScreenState extends State<AiRecordToTextScreen>
-    with EntryAdMixin {
+class _AiRecordToTextScreenState extends State<AiRecordToTextScreen> {
+  static const _actionAdCount = 3;
+
   final _speech = SpeechToText();
   final _random = Random();
 
@@ -37,7 +37,6 @@ class _AiRecordToTextScreenState extends State<AiRecordToTextScreen>
   @override
   void initState() {
     super.initState();
-    initEntryAd();
     _initSpeech();
   }
 
@@ -115,10 +114,16 @@ class _AiRecordToTextScreenState extends State<AiRecordToTextScreen>
 
     setState(() {
       _converting = true;
-      _status = null;
+      _status = 'Watch ad 1 of $_actionAdCount...';
     });
 
-    final rewarded = await AdService.instance.showRewarded(
+    final rewarded = await AdService.instance.showRewardedMultiple(
+      _actionAdCount,
+      onProgress: (current, total) {
+        if (mounted) {
+          setState(() => _status = 'Watch ad $current of $total...');
+        }
+      },
       onAdNotReady: () {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -316,7 +321,7 @@ class _AiRecordToTextScreenState extends State<AiRecordToTextScreen>
               bullets: [
                 'Speak clearly and avoid background noise.',
                 'Choose the correct language for better accuracy.',
-                'Reward ad must be completed before transcription starts.',
+                'Watch 3 reward ads before transcription starts.',
                 'Estimated cost: 1 point per 10 seconds of audio.',
               ],
             ),

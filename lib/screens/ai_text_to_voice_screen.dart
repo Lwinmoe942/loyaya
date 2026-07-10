@@ -8,7 +8,6 @@ import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/theme/app_theme.dart';
 import 'package:loyaya/widgets/ai_hero_card.dart';
 import 'package:loyaya/widgets/dinga_page_header.dart';
-import 'package:loyaya/widgets/entry_ad_mixin.dart';
 
 class AiTextToVoiceScreen extends StatefulWidget {
   const AiTextToVoiceScreen({super.key, required this.api});
@@ -19,8 +18,9 @@ class AiTextToVoiceScreen extends StatefulWidget {
   State<AiTextToVoiceScreen> createState() => _AiTextToVoiceScreenState();
 }
 
-class _AiTextToVoiceScreenState extends State<AiTextToVoiceScreen>
-    with EntryAdMixin {
+class _AiTextToVoiceScreenState extends State<AiTextToVoiceScreen> {
+  static const _actionAdCount = 3;
+
   final _controller = TextEditingController();
   final _tts = FlutterTts();
   final _random = Random();
@@ -36,7 +36,6 @@ class _AiTextToVoiceScreenState extends State<AiTextToVoiceScreen>
   @override
   void initState() {
     super.initState();
-    initEntryAd();
     _controller.addListener(() => setState(() {}));
     _initTts();
   }
@@ -83,10 +82,16 @@ class _AiTextToVoiceScreenState extends State<AiTextToVoiceScreen>
 
     setState(() {
       _generating = true;
-      _status = null;
+      _status = 'Watch ad 1 of $_actionAdCount...';
     });
 
-    final rewarded = await AdService.instance.showRewarded(
+    final rewarded = await AdService.instance.showRewardedMultiple(
+      _actionAdCount,
+      onProgress: (current, total) {
+        if (mounted) {
+          setState(() => _status = 'Watch ad $current of $total...');
+        }
+      },
       onAdNotReady: () {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -260,7 +265,7 @@ class _AiTextToVoiceScreenState extends State<AiTextToVoiceScreen>
             const AiInfoCard(
               title: 'Before Generating',
               bullets: [
-                'Reward ad must be completed before voice generation starts.',
+                'Watch 3 reward ads before voice generation starts.',
                 'Points are charged based on text length (1 pt / 50 chars).',
                 'Generated voice result will appear in AI History.',
                 'After generation, you can play the audio again from this screen.',
