@@ -17,6 +17,23 @@ class WatchScreen extends StatefulWidget {
 }
 
 class _WatchScreenState extends State<WatchScreen> {
+  static const _fallbackVideos = [
+    {
+      'id': 'watch_start',
+      'title': 'Getting Started Video',
+      'points': 3,
+      'watch_seconds': 20,
+      'video_url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    },
+    {
+      'id': 'watch_earn',
+      'title': 'Earn Points Tutorial',
+      'points': 3,
+      'watch_seconds': 20,
+      'video_url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+    },
+  ];
+
   List<Map<String, dynamic>> _videos = [];
   bool _loading = true;
   bool _starting = false;
@@ -29,28 +46,39 @@ class _WatchScreenState extends State<WatchScreen> {
   }
 
   Future<void> _load() async {
+    if (mounted) setState(() => _loading = true);
+
+    var items = List<Map<String, dynamic>>.from(_fallbackVideos);
     try {
-      final items = await widget.api.watchVideos();
+      final loaded = await widget.api.watchVideos();
+      if (loaded.isNotEmpty) {
+        items = loaded;
+      }
+    } catch (_) {
+      // Keep fallback videos when catalog API is unreachable.
+    }
+
+    final claimed = <String>{};
+    try {
       final history = await widget.api.history();
-      final claimed = <String>{};
       for (final row in history) {
         if (row['type']?.toString() == 'earn_watch_video') {
           final ref = row['reference_id']?.toString();
           if (ref != null && ref.isNotEmpty) claimed.add(ref);
         }
       }
-      if (mounted) {
-        setState(() {
-          _videos = items;
-          _claimed
-            ..clear()
-            ..addAll(claimed);
-        });
-      }
     } catch (_) {
-      // empty
-    } finally {
-      if (mounted) setState(() => _loading = false);
+      // History is optional for showing the video list.
+    }
+
+    if (mounted) {
+      setState(() {
+        _videos = items;
+        _claimed
+          ..clear()
+          ..addAll(claimed);
+        _loading = false;
+      });
     }
   }
 
