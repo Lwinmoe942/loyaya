@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/theme/app_theme.dart';
 import 'package:loyaya/widgets/dinga_page_header.dart';
+import 'package:loyaya/widgets/entry_ad_mixin.dart';
 
 class RedeemGiftScreen extends StatefulWidget {
   const RedeemGiftScreen({super.key, required this.api});
@@ -12,11 +13,17 @@ class RedeemGiftScreen extends StatefulWidget {
   State<RedeemGiftScreen> createState() => _RedeemGiftScreenState();
 }
 
-class _RedeemGiftScreenState extends State<RedeemGiftScreen> {
+class _RedeemGiftScreenState extends State<RedeemGiftScreen> with EntryAdMixin {
   final _codeController = TextEditingController();
   bool _submitting = false;
   String? _message;
   bool _success = false;
+
+  @override
+  void initState() {
+    super.initState();
+    initEntryAd();
+  }
 
   @override
   void dispose() {

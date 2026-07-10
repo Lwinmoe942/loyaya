@@ -16,7 +16,8 @@ class GamesController extends Controller
         $user = $request->attributes->get('auth_user');
 
         return response()->json([
-            'scratch_played_today' => $this->games->scratchPlayedToday($user->id),
+            'scratch_cooldown_seconds' => $this->games->scratchCooldownSeconds($user->id),
+            'scratch_available' => $this->games->scratchCooldownSeconds($user->id) === 0,
             'spin_played_today' => $this->games->spinPlayedToday($user->id),
         ]);
     }
@@ -30,7 +31,7 @@ class GamesController extends Controller
         } catch (\RuntimeException $e) {
             return response()->json(
                 ['error' => $e->getMessage()],
-                $e->getMessage() === 'ALREADY_PLAYED_TODAY' ? 409 : 400,
+                $e->getMessage() === 'SCRATCH_COOLDOWN' ? 429 : 400,
             );
         }
 

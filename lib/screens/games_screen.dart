@@ -4,11 +4,23 @@ import 'package:loyaya/screens/tic_tac_toe_screen.dart';
 import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/theme/app_theme.dart';
 import 'package:loyaya/widgets/dinga_page_header.dart';
+import 'package:loyaya/widgets/entry_ad_mixin.dart';
 
-class GamesScreen extends StatelessWidget {
+class GamesScreen extends StatefulWidget {
   const GamesScreen({super.key, required this.api});
 
   final ApiClient api;
+
+  @override
+  State<GamesScreen> createState() => _GamesScreenState();
+}
+
+class _GamesScreenState extends State<GamesScreen> with EntryAdMixin {
+  @override
+  void initState() {
+    super.initState();
+    initEntryAd();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +46,7 @@ class GamesScreen extends StatelessWidget {
                     tags: const ['Reward Points', 'Ad Required'],
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => SpinWheelScreen(api: api),
+                        builder: (_) => SpinWheelScreen(api: widget.api),
                       ),
                     ),
                   ),
@@ -47,7 +59,7 @@ class GamesScreen extends StatelessWidget {
                     tags: const ['Win: +1 Point', 'Bonus: +1'],
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => TicTacToeScreen(api: api),
+                        builder: (_) => TicTacToeScreen(api: widget.api),
                       ),
                     ),
                   ),

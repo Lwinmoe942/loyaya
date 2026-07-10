@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:loyaya/services/ad_service.dart';
 import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/theme/app_theme.dart';
 import 'package:loyaya/widgets/dinga_page_header.dart';
+import 'package:loyaya/widgets/entry_ad_mixin.dart';
 import 'package:loyaya/widgets/scratch_card.dart';
 
 class ScratchScreen extends StatefulWidget {
@@ -14,18 +17,30 @@ class ScratchScreen extends StatefulWidget {
   State<ScratchScreen> createState() => _ScratchScreenState();
 }
 
-class _ScratchScreenState extends State<ScratchScreen> {
+class _ScratchScreenState extends State<ScratchScreen> with EntryAdMixin {
+  static const _cooldownMinutes = 5;
+
   bool _loading = true;
-  bool _playedToday = false;
+  int _cooldownSeconds = 0;
+  Timer? _cooldownTimer;
   bool _watchingAd = false;
   bool _scratching = false;
   int? _wonPoints;
   String? _message;
 
+  bool get _onCooldown => _cooldownSeconds > 0;
+
   @override
   void initState() {
     super.initState();
+    initEntryAd();
     _loadStatus();
+  }
+
+  @override
+  void dispose() {
+    _cooldownTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadStatus() async {
@@ -36,10 +51,8 @@ class _ScratchScreenState extends State<ScratchScreen> {
     try {
       final status = await widget.api.gamesStatus();
       if (mounted) {
-        setState(() {
-          _playedToday = status['scratch_played_today'] == true;
-          _loading = false;
-        });
+        _applyCooldown(status['scratch_cooldown_seconds'] as int? ?? 0);
+        setState(() => _loading = false);
       }
     } on ApiException catch (e) {
       if (mounted) {
@@ -51,8 +64,30 @@ class _ScratchScreenState extends State<ScratchScreen> {
     }
   }
 
+  void _applyCooldown(int seconds) {
+    _cooldownTimer?.cancel();
+    _cooldownSeconds = seconds.clamp(0, _cooldownMinutes * 60);
+    if (_cooldownSeconds <= 0) return;
+
+    _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      setState(() {
+        _cooldownSeconds = (_cooldownSeconds - 1).clamp(0, _cooldownMinutes * 60);
+      });
+      if (_cooldownSeconds <= 0) {
+        _cooldownTimer?.cancel();
+      }
+    });
+  }
+
+  String _formatCooldown(int totalSeconds) {
+    final minutes = totalSeconds ~/ 60;
+    final seconds = totalSeconds % 60;
+    return '${minutes}m ${seconds.toString().padLeft(2, '0')}s';
+  }
+
   Future<void> _watchAdAndScratch() async {
-    if (_playedToday || _watchingAd || _scratching) return;
+    if (_onCooldown || _watchingAd || _scratching) return;
 
     setState(() {
       _watchingAd = true;
@@ -85,11 +120,14 @@ class _ScratchScreenState extends State<ScratchScreen> {
       setState(() {
         _wonPoints = result['points'] as int? ?? 0;
         _scratching = true;
-        _playedToday = true;
       });
+      _applyCooldown(_cooldownMinutes * 60);
     } on ApiException catch (e) {
       if (mounted) {
         setState(() => _message = apiErrorMessage(e.error));
+        if (e.error == 'SCRATCH_COOLDOWN') {
+          _loadStatus();
+        }
       }
     }
   }
@@ -115,7 +153,7 @@ class _ScratchScreenState extends State<ScratchScreen> {
               DingaPageHeader(
                 title: 'Scratch & Win',
                 subtitle:
-                    'Watch a reward ad, then scratch to reveal 2–5 points. Once per day.',
+                    'Watch a reward ad, then scratch to reveal 2–5 points. Wait $_cooldownMinutes minutes between scratches.',
                 onBack: () => Navigator.pop(context),
                 titleColor: AppColors.primary,
               ),
@@ -135,12 +173,18 @@ class _ScratchScreenState extends State<ScratchScreen> {
                       const SizedBox(height: 8),
                       if (_loading)
                         const LinearProgressIndicator()
-                      else
+                      else if (_onCooldown)
                         Text(
-                          _playedToday
-                              ? 'You already scratched today. Come back tomorrow!'
-                              : 'Scratch is available now',
+                          'Next scratch in ${_formatCooldown(_cooldownSeconds)}',
                           style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        )
+                      else
+                        const Text(
+                          'Scratch is available now',
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
@@ -157,7 +201,7 @@ class _ScratchScreenState extends State<ScratchScreen> {
                 )
               else
                 FilledButton(
-                  onPressed: _playedToday || _loading || _watchingAd
+                  onPressed: _onCooldown || _loading || _watchingAd
                       ? null
                       : _watchAdAndScratch,
                   child: _watchingAd
@@ -201,9 +245,9 @@ class _ScratchScreenState extends State<ScratchScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Reward ads help keep Lotaya Shwe Oh free. Prizes are 2, 3, or 5 points per day.',
-                        style: TextStyle(color: AppColors.textSecondary),
+                      Text(
+                        'Reward ads help keep Lotaya Shwe Oh free. You can scratch again after $_cooldownMinutes minutes.',
+                        style: const TextStyle(color: AppColors.textSecondary),
                       ),
                     ],
                   ),

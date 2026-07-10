@@ -6,16 +6,18 @@ use App\Models\PointTransaction;
 
 class GameService
 {
+    private const SCRATCH_COOLDOWN_MINUTES = 5;
+
     public function __construct(private readonly PointService $points) {}
 
     /** @return array{points: int, balance: int, duplicate: bool} */
     public function playScratch(int $userId): array
     {
-        $key = 'scratch_'.$userId.'_'.now()->toDateString();
-
-        if ($this->hasIdempotentKey($key)) {
-            throw new \RuntimeException('ALREADY_PLAYED_TODAY');
+        if ($this->scratchCooldownSeconds($userId) > 0) {
+            throw new \RuntimeException('SCRATCH_COOLDOWN');
         }
+
+        $key = 'scratch_'.$userId.'_'.now()->timestamp;
 
         $prizes = [2, 2, 2, 3, 3, 5];
         $points = $prizes[array_rand($prizes)];
@@ -125,9 +127,24 @@ class GameService
         ];
     }
 
-    public function scratchPlayedToday(int $userId): bool
+    public function scratchCooldownSeconds(int $userId): int
     {
-        return $this->hasIdempotentKey('scratch_'.$userId.'_'.now()->toDateString());
+        $last = PointTransaction::query()
+            ->where('user_id', $userId)
+            ->where('type', 'earn_scratch')
+            ->orderByDesc('created_at')
+            ->value('created_at');
+
+        if ($last === null) {
+            return 0;
+        }
+
+        $availableAt = \Carbon\Carbon::parse($last)->addMinutes(self::SCRATCH_COOLDOWN_MINUTES);
+        if (now()->gte($availableAt)) {
+            return 0;
+        }
+
+        return (int) now()->diffInSeconds($availableAt);
     }
 
     public function spinPlayedToday(int $userId): bool

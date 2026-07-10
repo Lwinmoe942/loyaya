@@ -9,18 +9,23 @@ class AdService {
 
   bool _initialized = false;
   RewardedAd? _rewardedAd;
-  bool _loading = false;
+  InterstitialAd? _interstitialAd;
+  bool _loadingRewarded = false;
+  bool _loadingInterstitial = false;
 
   Future<void> init() async {
     if (_initialized) return;
     await MobileAds.instance.initialize();
     _initialized = true;
-    await _loadRewarded();
+    await Future.wait([
+      _loadRewarded(),
+      _loadInterstitial(),
+    ]);
   }
 
   Future<void> _loadRewarded() async {
-    if (_loading) return;
-    _loading = true;
+    if (_loadingRewarded) return;
+    _loadingRewarded = true;
     final completer = Completer<void>();
 
     await RewardedAd.load(
@@ -29,12 +34,12 @@ class AdService {
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
           _rewardedAd = ad;
-          _loading = false;
+          _loadingRewarded = false;
           if (!completer.isCompleted) completer.complete();
         },
         onAdFailedToLoad: (error) {
           _rewardedAd = null;
-          _loading = false;
+          _loadingRewarded = false;
           if (!completer.isCompleted) completer.complete();
         },
       ),
@@ -43,8 +48,75 @@ class AdService {
     return completer.future.timeout(
       const Duration(seconds: 12),
       onTimeout: () {
-        _loading = false;
+        _loadingRewarded = false;
       },
+    );
+  }
+
+  Future<void> _loadInterstitial() async {
+    if (_loadingInterstitial) return;
+    _loadingInterstitial = true;
+    final completer = Completer<void>();
+
+    await InterstitialAd.load(
+      adUnitId: AdConfig.interstitialUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialAd = ad;
+          _loadingInterstitial = false;
+          if (!completer.isCompleted) completer.complete();
+        },
+        onAdFailedToLoad: (error) {
+          _interstitialAd = null;
+          _loadingInterstitial = false;
+          if (!completer.isCompleted) completer.complete();
+        },
+      ),
+    );
+
+    return completer.future.timeout(
+      const Duration(seconds: 12),
+      onTimeout: () {
+        _loadingInterstitial = false;
+      },
+    );
+  }
+
+  /// Full-screen ad when opening Redeem / Scratch / Games.
+  Future<void> showInterstitial() async {
+    if (!_initialized) {
+      await init();
+    }
+
+    if (_interstitialAd == null) {
+      await _loadInterstitial();
+    }
+
+    final ad = _interstitialAd;
+    if (ad == null) return;
+
+    final completer = Completer<void>();
+
+    ad.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (dismissed) {
+        dismissed.dispose();
+        _interstitialAd = null;
+        _loadInterstitial();
+        if (!completer.isCompleted) completer.complete();
+      },
+      onAdFailedToShowFullScreenContent: (failed, error) {
+        failed.dispose();
+        _interstitialAd = null;
+        _loadInterstitial();
+        if (!completer.isCompleted) completer.complete();
+      },
+    );
+
+    ad.show();
+    return completer.future.timeout(
+      const Duration(seconds: 60),
+      onTimeout: () {},
     );
   }
 
@@ -94,5 +166,7 @@ class AdService {
   void dispose() {
     _rewardedAd?.dispose();
     _rewardedAd = null;
+    _interstitialAd?.dispose();
+    _interstitialAd = null;
   }
 }
