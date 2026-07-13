@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loyaya/services/ad_service.dart';
 import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/services/content_repository.dart';
 import 'package:loyaya/services/progress_service.dart';
@@ -25,6 +26,7 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
   final _progress = ProgressService();
   final Map<int, int?> _answers = {};
   bool _submitting = false;
+  bool _watchingAd = false;
   bool _locked = false;
   String? _message;
   bool _passed = false;
@@ -68,6 +70,29 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
       return;
     }
 
+    setState(() {
+      _watchingAd = true;
+      _message = null;
+    });
+
+    final rewarded = await AdService.instance.showRewarded(
+      onAdNotReady: () {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Ad is loading. Please try again.')),
+          );
+        }
+      },
+    );
+
+    if (!mounted) return;
+    if (!rewarded) {
+      setState(() => _watchingAd = false);
+      return;
+    }
+
+    setState(() => _watchingAd = false);
+
     for (var i = 0; i < widget.survey.questions.length; i++) {
       if (_answers[i] != widget.survey.questions[i].correct) {
         await _lockSurvey();
@@ -75,10 +100,7 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
       }
     }
 
-    setState(() {
-      _submitting = true;
-      _message = null;
-    });
+    setState(() => _submitting = true);
 
     try {
       final result = await widget.api.earnSurvey(widget.survey.id);
@@ -114,7 +136,7 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
             DingaPageHeader(
               title: 'Survey',
               subtitle:
-                  'Answer all 3 questions correctly. One wrong = try again tomorrow.',
+                  'Watch a reward ad, answer all 3 correctly. One wrong = try again tomorrow.',
               onBack: () => Navigator.pop(context),
               titleColor: const Color(0xFFE57373),
             ),
@@ -197,7 +219,7 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
                       index: i,
                       question: widget.survey.questions[i],
                       selected: _answers[i],
-                      enabled: !_locked && !_passed && !_submitting,
+                      enabled: !_locked && !_passed && !_submitting && !_watchingAd,
                       onSelect: (value) => setState(() => _answers[i] = value),
                     ),
                   if (_message != null) ...[
@@ -215,11 +237,12 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
                   ],
                   const SizedBox(height: 12),
                   FilledButton(
-                    onPressed: _submitting || _passed || _locked ? null : _submit,
+                    onPressed:
+                        _submitting || _passed || _locked || _watchingAd ? null : _submit,
                     style: FilledButton.styleFrom(
                       backgroundColor: const Color(0xFFE57373),
                     ),
-                    child: _submitting
+                    child: _submitting || _watchingAd
                         ? const SizedBox(
                             height: 22,
                             width: 22,
@@ -229,7 +252,11 @@ class _SurveyDetailScreenState extends State<SurveyDetailScreen> {
                             ),
                           )
                         : Text(
-                            _locked ? 'Try Again Tomorrow' : 'Submit Answers',
+                            _locked
+                                ? 'Try Again Tomorrow'
+                                : _watchingAd
+                                    ? 'Watching ad...'
+                                    : 'Watch Ad & Submit Answers',
                           ),
                   ),
                 ],

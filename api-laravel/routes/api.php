@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AiController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ContentController;
+use App\Http\Controllers\Api\CpxController;
 use App\Http\Controllers\Api\CoursesController;
 use App\Http\Controllers\Api\GamesController;
 use App\Http\Controllers\Api\GiftCodeController;
@@ -22,6 +23,8 @@ Route::get('/content/tutorials', [CatalogController::class, 'tutorials']);
 Route::get('/content/classroom', [CatalogController::class, 'classroom']);
 Route::get('/content/watch', [CatalogController::class, 'watchVideos']);
 Route::get('/content/courses', [CoursesController::class, 'index']);
+Route::match(['get', 'post'], '/cpx/postback', [CpxController::class, 'postback']);
+Route::match(['get', 'post'], '/postback/cpx', [CpxController::class, 'postback']);
 
 Route::middleware('api.token')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
@@ -45,6 +48,7 @@ Route::middleware('api.token')->group(function () {
     Route::post('/referral/apply', [ReferralController::class, 'apply']);
     Route::get('/courses/applications', [CoursesController::class, 'applications']);
     Route::post('/courses/apply', [CoursesController::class, 'apply']);
+    Route::get('/cpx/config', [CpxController::class, 'config']);
 });
 
 Route::post('/withdraw/request', [WithdrawController::class, 'request']);

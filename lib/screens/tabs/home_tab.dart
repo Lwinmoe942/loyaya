@@ -8,7 +8,7 @@ import 'package:loyaya/screens/tutorials_screen.dart';
 import 'package:loyaya/screens/watch_screen.dart';
 import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/theme/app_theme.dart';
-import 'package:loyaya/screens/survey_list_screen.dart';
+import 'package:loyaya/screens/cpx_survey_screen.dart';
 import 'package:loyaya/widgets/coming_soon_dialog.dart';
 import 'package:loyaya/widgets/earn_grid_item.dart';
 
@@ -179,7 +179,7 @@ class _HomeTabState extends State<HomeTab> {
                   label: 'Survey',
                   icon: Icons.poll_outlined,
                   color: const Color(0xFF42A5F5),
-                  onTap: () => _open(SurveyListScreen(api: widget.api)),
+                  onTap: () => _open(CpxSurveyScreen(api: widget.api)),
                 ),
                 EarnGridItem(
                   label: 'Scratch',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loyaya/services/ad_service.dart';
 import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/services/content_repository.dart';
 import 'package:loyaya/services/progress_service.dart';
@@ -25,6 +26,7 @@ class _MathQuizScreenState extends State<MathQuizScreen> {
   final _answerController = TextEditingController();
   final _progress = ProgressService();
   bool _loading = false;
+  bool _watchingAd = false;
   bool _locked = false;
   String? _message;
   bool? _correct;
@@ -72,15 +74,35 @@ class _MathQuizScreenState extends State<MathQuizScreen> {
       return;
     }
 
+    setState(() {
+      _watchingAd = true;
+      _message = null;
+    });
+
+    final rewarded = await AdService.instance.showRewarded(
+      onAdNotReady: () {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Ad is loading. Please try again.')),
+          );
+        }
+      },
+    );
+
+    if (!mounted) return;
+    if (!rewarded) {
+      setState(() => _watchingAd = false);
+      return;
+    }
+
+    setState(() => _watchingAd = false);
+
     if (answer != widget.quiz.answer) {
       await _lockQuiz();
       return;
     }
 
-    setState(() {
-      _loading = true;
-      _message = null;
-    });
+    setState(() => _loading = true);
 
     try {
       final result = await widget.api.earnMathQuiz(widget.quiz.id);
@@ -118,7 +140,7 @@ class _MathQuizScreenState extends State<MathQuizScreen> {
             children: [
               DingaPageHeader(
                 title: 'Math Quiz',
-                subtitle: 'Solve correctly and earn +${widget.quiz.points} points.',
+                subtitle: 'Watch a reward ad, solve correctly, and earn +${widget.quiz.points} points.',
                 onBack: () => Navigator.pop(context),
               ),
               Card(
@@ -137,7 +159,7 @@ class _MathQuizScreenState extends State<MathQuizScreen> {
                       const SizedBox(height: 16),
                       TextField(
                         controller: _answerController,
-                        enabled: !_locked && !_loading,
+                        enabled: !_locked && !_loading && !_watchingAd,
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(
                           labelText: 'Your answer',
@@ -150,8 +172,8 @@ class _MathQuizScreenState extends State<MathQuizScreen> {
               ),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: _loading || _locked ? null : _submit,
-                child: _loading
+                onPressed: _loading || _locked || _watchingAd ? null : _submit,
+                child: _loading || _watchingAd
                     ? const SizedBox(
                         height: 22,
                         width: 22,
@@ -160,7 +182,11 @@ class _MathQuizScreenState extends State<MathQuizScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : Text(_locked ? 'Try Again Tomorrow' : 'Submit (+${widget.quiz.points} pts)'),
+                    : Text(_locked
+                        ? 'Try Again Tomorrow'
+                        : _watchingAd
+                            ? 'Watching ad...'
+                            : 'Watch Ad & Submit (+${widget.quiz.points} pts)'),
               ),
               if (_message != null) ...[
                 const SizedBox(height: 16),

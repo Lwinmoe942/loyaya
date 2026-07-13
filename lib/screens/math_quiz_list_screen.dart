@@ -77,7 +77,7 @@ class _MathQuizListScreenState extends State<MathQuizListScreen> {
             DingaPageHeader(
               title: 'Math Quiz',
               subtitle:
-                  'Solve correctly and earn points. Wrong once = try again tomorrow. ${_quizzes.length} quizzes.',
+                  'Watch a reward ad per submit. Solve correctly to earn points. Wrong once = try again tomorrow. ${_quizzes.length} quizzes.',
               onBack: () => Navigator.pop(context),
             ),
             Expanded(

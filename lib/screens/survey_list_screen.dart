@@ -77,7 +77,7 @@ class _SurveyListScreenState extends State<SurveyListScreen> {
             DingaPageHeader(
               title: 'Survey',
               subtitle:
-                  'Answer all 3 questions correctly. Wrong once = try again tomorrow. ${_surveys.length} surveys.',
+                  'Watch a reward ad per submit. Answer all 3 correctly. Wrong once = try again tomorrow. ${_surveys.length} surveys.',
               onBack: () => Navigator.pop(context),
               titleColor: const Color(0xFFE57373),
             ),

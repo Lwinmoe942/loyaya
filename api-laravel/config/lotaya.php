@@ -39,4 +39,14 @@ return [
     'exchange_url' => env('EXCHANGE_URL', 'http://localhost:8000/exchange'),
     'app_url' => env('APP_URL', 'http://localhost:8000'),
     'course_contact_email' => env('COURSE_CONTACT_EMAIL', 'moegyi707299@gmail.com'),
+
+    'cpx' => [
+        'app_id' => env('CPX_APP_ID', ''),
+        'secure_hash' => env('CPX_SECURE_HASH', ''),
+        'points_per_survey' => (int) env('CPX_POINTS_PER_SURVEY', 2),
+        'allowed_ips' => array_values(array_filter(array_map(
+            static fn (string $ip): string => trim($ip),
+            explode(',', (string) env('CPX_ALLOWED_IPS', '')),
+        ))),
+    ],
 ];

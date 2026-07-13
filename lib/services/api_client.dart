@@ -140,6 +140,16 @@ class ApiClient {
     );
   }
 
+  Future<Map<String, dynamic>> cpxConfig() async {
+    return _withRetry(() async {
+      final res = await _get(
+        Uri.parse('${ApiConfig.baseUrl}/api/cpx/config'),
+        headers: _headers,
+      );
+      return _parse(res);
+    });
+  }
+
   Future<Map<String, dynamic>> earnWatchVideo(String videoId) async {
     return earn(
       action: 'watch_video',
@@ -497,6 +507,8 @@ String apiErrorMessage(String error) {
     'ALREADY_CLAIMED' => 'Points for this match were already claimed.',
     'INVALID_MATCH' => 'Invalid game session. Please start a new match.',
     'INVALID_ACTION' => 'This reward is not available on the server yet.',
+    'CPX_NOT_CONFIGURED' =>
+      'Surveys are not configured on the server yet. Please try again later.',
     'Server Error' => 'Server error while claiming points. Please try again.',
     'INVALID_CREDENTIALS' => 'Invalid email or password.',
     'VALIDATION_ERROR' => 'Please check your input and try again.',
