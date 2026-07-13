@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CourseApplication;
 use App\Models\GiftCode;
 use App\Models\User;
 use App\Models\WithdrawRequest;
+use App\Services\CourseService;
 use App\Services\ExchangeStatsService;
 use App\Services\GiftCodeService;
 use App\Services\PointService;
@@ -18,6 +20,7 @@ class AdminPanelController extends Controller
         private readonly PointService $points,
         private readonly ExchangeStatsService $stats,
         private readonly GiftCodeService $gifts,
+        private readonly CourseService $courses,
     ) {}
 
     public function loginForm(): View
@@ -133,5 +136,50 @@ class AdminPanelController extends Controller
         $row->update(['status' => 'rejected']);
 
         return back()->with('success', "#{$id} ကို reject လုပ်ပြီး point ပြန်ပေးပြီးပါပြီ။");
+    }
+
+    public function courseApplications(Request $request): View
+    {
+        $status = $request->query('status', 'pending');
+        $counts = CourseApplication::query()
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->all();
+
+        $applications = CourseApplication::query()
+            ->with('user:id,public_id,name')
+            ->where('status', $status)
+            ->orderByDesc('id')
+            ->limit(100)
+            ->get();
+
+        return view('admin.course_applications', [
+            'status' => $status,
+            'counts' => $counts,
+            'applications' => $applications,
+        ]);
+    }
+
+    public function approveCourseApplication(int $id): RedirectResponse
+    {
+        try {
+            $this->courses->approve($id);
+        } catch (\RuntimeException) {
+            return back()->with('error', 'ဒီတောင်းဆိုမှုကို လုပ်ပြီးသားပါ။');
+        }
+
+        return back()->with('success', "Course application #{$id} approved.");
+    }
+
+    public function rejectCourseApplication(int $id): RedirectResponse
+    {
+        try {
+            $this->courses->reject($id);
+        } catch (\RuntimeException) {
+            return back()->with('error', 'ဒီတောင်းဆိုမှုကို လုပ်ပြီးသားပါ။');
+        }
+
+        return back()->with('success', "Course application #{$id} rejected.");
     }
 }

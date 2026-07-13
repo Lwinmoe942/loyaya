@@ -183,6 +183,35 @@ class ApiClient {
     return _catalogItems('/api/content/classroom');
   }
 
+  Future<List<Map<String, dynamic>>> courses() async {
+    return _catalogItems('/api/content/courses');
+  }
+
+  Future<Map<String, dynamic>> courseApplications() async {
+    final res = await _get(
+      Uri.parse('${ApiConfig.baseUrl}/api/courses/applications'),
+      headers: _headers,
+    );
+    return _parse(res);
+  }
+
+  Future<Map<String, dynamic>> applyForCourse({
+    required String courseId,
+    required String name,
+    required String phone,
+  }) async {
+    final res = await _post(
+      Uri.parse('${ApiConfig.baseUrl}/api/courses/apply'),
+      headers: _headers,
+      body: jsonEncode({
+        'course_id': courseId,
+        'name': name,
+        'phone': phone,
+      }),
+    );
+    return _parse(res);
+  }
+
   Future<List<Map<String, dynamic>>> watchVideos() async {
     return _catalogItems('/api/content/watch');
   }
@@ -459,6 +488,10 @@ String apiErrorMessage(String error) {
     'EMPTY_TEXT' => 'Please enter some text first.',
     'INVALID_REQUEST' => 'Invalid request. Please try again.',
     'ALREADY_APPLIED' => 'You already applied a referral code.',
+    'COURSE_ALREADY_APPLIED' =>
+      'You already applied for this course or are enrolled.',
+    'INSUFFICIENT_POINTS_FOR_COURSE' =>
+      'Not enough points to apply for this course yet.',
     'SELF_REFERRAL' => 'You cannot use your own referral code.',
     'DAILY_LIMIT' => 'Daily win limit reached. Try again tomorrow.',
     'ALREADY_CLAIMED' => 'Points for this match were already claimed.',

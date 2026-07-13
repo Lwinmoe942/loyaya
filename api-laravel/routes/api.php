@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AiController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\ContentController;
+use App\Http\Controllers\Api\CoursesController;
 use App\Http\Controllers\Api\GamesController;
 use App\Http\Controllers\Api\GiftCodeController;
 use App\Http\Controllers\Api\LeaderboardController;
@@ -20,6 +21,7 @@ Route::get('/leaderboard', [LeaderboardController::class, 'index']);
 Route::get('/content/tutorials', [CatalogController::class, 'tutorials']);
 Route::get('/content/classroom', [CatalogController::class, 'classroom']);
 Route::get('/content/watch', [CatalogController::class, 'watchVideos']);
+Route::get('/content/courses', [CoursesController::class, 'index']);
 
 Route::middleware('api.token')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
@@ -41,6 +43,8 @@ Route::middleware('api.token')->group(function () {
     Route::post('/ai/text-to-voice', [AiController::class, 'textToVoice']);
     Route::get('/referral/status', [ReferralController::class, 'status']);
     Route::post('/referral/apply', [ReferralController::class, 'apply']);
+    Route::get('/courses/applications', [CoursesController::class, 'applications']);
+    Route::post('/courses/apply', [CoursesController::class, 'apply']);
 });
 
 Route::post('/withdraw/request', [WithdrawController::class, 'request']);

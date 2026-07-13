@@ -38,4 +38,5 @@ return [
 
     'exchange_url' => env('EXCHANGE_URL', 'http://localhost:8000/exchange'),
     'app_url' => env('APP_URL', 'http://localhost:8000'),
+    'course_contact_email' => env('COURSE_CONTACT_EMAIL', 'moegyi707299@gmail.com'),
 ];

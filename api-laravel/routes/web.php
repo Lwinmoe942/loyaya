@@ -73,5 +73,8 @@ Route::middleware('admin.access')->prefix($adminPath)->name('admin.')->group(fun
         Route::post('/gift-codes', [AdminPanelController::class, 'createGiftCodes'])->name('gift-codes.create');
         Route::post('/withdraws/{id}/approve', [AdminPanelController::class, 'approve'])->name('withdraws.approve');
         Route::post('/withdraws/{id}/reject', [AdminPanelController::class, 'reject'])->name('withdraws.reject');
+        Route::get('/course-applications', [AdminPanelController::class, 'courseApplications'])->name('course-applications');
+        Route::post('/course-applications/{id}/approve', [AdminPanelController::class, 'approveCourseApplication'])->name('course-applications.approve');
+        Route::post('/course-applications/{id}/reject', [AdminPanelController::class, 'rejectCourseApplication'])->name('course-applications.reject');
     });
 });

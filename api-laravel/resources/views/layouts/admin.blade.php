@@ -172,6 +172,7 @@
                 <nav class="nav">
                     <a href="{{ route('admin.dashboard') }}" @if(request()->routeIs('admin.dashboard') || request()->routeIs('admin.withdraws')) class="is-active" @endif>Dashboard</a>
                     <a href="{{ route('admin.gift-codes') }}" @if(request()->routeIs('admin.gift-codes*')) class="is-active" @endif>Gift Codes</a>
+                    <a href="{{ route('admin.course-applications') }}" @if(request()->routeIs('admin.course-applications*')) class="is-active" @endif>Courses</a>
                 </nav>
                 <form method="post" action="{{ route('admin.logout') }}">
                     @csrf

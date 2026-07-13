@@ -23,6 +23,12 @@ class ContentCatalogService
     }
 
     /** @return list<array<string, mixed>> */
+    public function courses(): array
+    {
+        return $this->load('courses.json');
+    }
+
+    /** @return list<array<string, mixed>> */
     private function load(string $filename): array
     {
         $path = resource_path('content/'.$filename);
