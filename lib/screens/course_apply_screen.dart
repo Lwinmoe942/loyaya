@@ -44,33 +44,33 @@ class _CourseApplyScreenState extends State<CourseApplyScreen> {
     final phone = _phoneController.text.trim();
 
     if (name.length < 2) {
-      setState(() => _error = 'အမည် ထည့်ပါ။');
+      setState(() => _error = 'Please enter your name.');
       return;
     }
     if (phone.length < 6) {
-      setState(() => _error = 'ဖုန်းနံပါတ် ထည့်ပါ။');
+      setState(() => _error = 'Please enter your phone number.');
       return;
     }
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('လျှောက်လွှာ အတည်ပြု'),
+        title: const Text('Confirm application'),
         content: Text(
-          'လျှောက်လိုက်ရင် လက်ရှိ point ${widget.balance} အကုန် လျှော့ပါမယ်။\n\n'
-          'သင်တန်း: $_title\n'
-          'အမည်: $name\n'
-          'ဖုန်း: $phone\n\n'
-          'ဆက်လုပ်မလား?',
+          'All ${widget.balance} points will be deducted when you apply.\n\n'
+          'Course: $_title\n'
+          'Name: $name\n'
+          'Phone: $phone\n\n'
+          'Continue?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('မလုပ်တော့'),
+            child: const Text('Cancel'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('လျှောက်မယ်'),
+            child: const Text('Apply'),
           ),
         ],
       ),
@@ -98,10 +98,10 @@ class _CourseApplyScreenState extends State<CourseApplyScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context) => AlertDialog(
-          title: const Text('လျှောက်လွှာ ပို့ပြီးပါပြီ'),
+          title: const Text('Application submitted'),
           content: Text(
-            'သင့် point အကုန် လျှော့ပြီးပါပြီ။\n\n'
-            'ကျွန်ုပ်တို့က ဖုန်းနဲ့ ဆက်သွယ်ပြီး သင်တန်းမိတ်ဆက်ပေးပါမယ်။\n\n'
+            'Your points have been deducted.\n\n'
+            'We will call you to introduce the course.\n\n'
             'Email: $email',
           ),
           actions: [
@@ -120,7 +120,7 @@ class _CourseApplyScreenState extends State<CourseApplyScreen> {
                   await launchUrl(uri);
                 }
               },
-              child: const Text('Email ပို့'),
+              child: const Text('Send email'),
             ),
             FilledButton(
               onPressed: () => Navigator.pop(context),
@@ -151,10 +151,10 @@ class _CourseApplyScreenState extends State<CourseApplyScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               DingaPageHeader(
-                title: 'သင်တန်းလျှောက်',
+                title: 'Apply for course',
                 subtitle:
-                    '$_title — $required points ရောက်ပြီးမှ လျှောက်လို့ရပါမယ်။ '
-                    'လျှောက်လိုက်ရင် point အကုန် လျှော့ပါမယ်။',
+                    '$_title — you need $_required points to apply. '
+                    'All points will be deducted when you submit.',
                 onBack: () => Navigator.pop(context),
               ),
               Card(
@@ -169,7 +169,7 @@ class _CourseApplyScreenState extends State<CourseApplyScreen> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'လက်ရှိ balance: ${widget.balance} pts',
+                        'Current balance: ${widget.balance} pts',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -182,7 +182,7 @@ class _CourseApplyScreenState extends State<CourseApplyScreen> {
                 enabled: !_submitting,
                 textCapitalization: TextCapitalization.words,
                 decoration: const InputDecoration(
-                  labelText: 'အမည်',
+                  labelText: 'Full name',
                   border: OutlineInputBorder(),
                 ),
               ),
@@ -193,7 +193,7 @@ class _CourseApplyScreenState extends State<CourseApplyScreen> {
                 keyboardType: TextInputType.phone,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: const InputDecoration(
-                  labelText: 'ဖုန်းနံပါတ်',
+                  labelText: 'Phone number',
                   hintText: '09xxxxxxxxx',
                   border: OutlineInputBorder(),
                 ),
@@ -210,7 +210,7 @@ class _CourseApplyScreenState extends State<CourseApplyScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text('လျှောက်လွှာ ပို့မယ်'),
+                    : const Text('Submit application'),
               ),
               if (_error != null) ...[
                 const SizedBox(height: 12),

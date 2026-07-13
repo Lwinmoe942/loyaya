@@ -90,8 +90,8 @@ class _ClassroomTabState extends State<ClassroomTab> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'ဒီသင်တန်းအတွက် $required points လိုပါသေးတယ်။ '
-            'လက်ရှိ ${widget.balance} pts',
+            'You need $required points for this course. '
+            'Current balance: ${widget.balance} pts',
           ),
         ),
       );
@@ -102,7 +102,7 @@ class _ClassroomTabState extends State<ClassroomTab> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'လျှောက်လွှာ စောင့်ဆိုင်းနေပါတယ်။ $_contactEmail က ဆက်သွယ်ပေးပါမယ်။',
+            'Application pending. We will contact you at $_contactEmail.',
           ),
         ),
       );
@@ -125,7 +125,9 @@ class _ClassroomTabState extends State<ClassroomTab> {
       if (widget.balance < required) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('$required points ပြန်ရောက်မှ ထပ်လျှောက်လို့ရပါမယ်။'),
+            content: Text(
+              'Reach $required points again to re-apply for this course.',
+            ),
           ),
         );
         return;
@@ -182,7 +184,7 @@ class _ClassroomTabState extends State<ClassroomTab> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Premium သင်တန်း',
+                        'Premium Courses',
                         style: TextStyle(
                           color: AppColors.primary,
                           fontSize: 24,
@@ -190,7 +192,7 @@ class _ClassroomTabState extends State<ClassroomTab> {
                         ),
                       ),
                       Text(
-                        '500 / 1000 / 2000 points ရောက်ရင် လျှောက်လို့ရပါမယ်။',
+                        'Apply when you reach 500, 1000, or 2000 points.',
                         style: TextStyle(color: AppColors.textSecondary),
                       ),
                     ],
@@ -206,7 +208,7 @@ class _ClassroomTabState extends State<ClassroomTab> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'လျှောက်လွှာ လမ်းညွှန်',
+                      'HOW TO APPLY',
                       style: TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.bold,
@@ -215,10 +217,10 @@ class _ClassroomTabState extends State<ClassroomTab> {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      '1. Point ရောက်ပြီး လျှောက်လွှာ ပို့ပါ\n'
-                      '2. Point အကုန် လျှော့ပါမယ်\n'
-                      '3. အမည် + ဖုန်းနံပါတ် ထည့်ပါ\n'
-                      '4. ကျွန်ုပ်တို့က ဖုန်းဆက်ပြီး သင်တန်းမိတ်ဆက်ပေးပါမယ်',
+                      '1. Reach the required points and submit an application\n'
+                      '2. All your points will be deducted\n'
+                      '3. Enter your name and phone number\n'
+                      '4. We will call you to introduce the course',
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
                     const SizedBox(height: 8),
@@ -241,7 +243,7 @@ class _ClassroomTabState extends State<ClassroomTab> {
             ),
             const SizedBox(height: 12),
             const Text(
-              'သင်တန်းများ',
+              'Courses',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -249,7 +251,7 @@ class _ClassroomTabState extends State<ClassroomTab> {
               const Center(child: CircularProgressIndicator())
             else if (_courses.isEmpty)
               const Card(
-                child: ListTile(title: Text('သင်တန်း မရှိသေးပါ။')),
+                child: ListTile(title: Text('No courses available yet.')),
               )
             else
               for (final course in _courses)
@@ -318,7 +320,7 @@ class _CourseCard extends StatelessWidget {
           child: Icon(icon, color: Colors.white),
         ),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text('$subtitle\n$required points လိုအပ်'),
+        subtitle: Text('$subtitle\n$required points required'),
         isThreeLine: true,
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

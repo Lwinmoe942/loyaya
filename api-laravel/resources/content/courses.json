@@ -2,21 +2,21 @@
   {
     "id": "course_tkinter",
     "title": "Mingalarpar Tkinter",
-    "subtitle": "Python Tkinter သင်တန်း — YouTube playlist",
+    "subtitle": "Python Tkinter course — YouTube playlist",
     "points_required": 500,
     "video_url": "https://www.youtube.com/playlist?list=PLkJY_57RdtaNgeB7iPjT4Xyih5w7Djt_f"
   },
   {
     "id": "course_level_2",
     "title": "Premium Training Level 2",
-    "subtitle": "သင်တန်း Level 2 — YouTube video",
+    "subtitle": "Level 2 course — YouTube video",
     "points_required": 1000,
     "video_url": "https://www.youtube.com/watch?v=kbt3kgwIeZ0"
   },
   {
     "id": "course_level_3",
     "title": "Premium Training Level 3",
-    "subtitle": "သင်တန်း Level 3 — YouTube video",
+    "subtitle": "Level 3 course — YouTube video",
     "points_required": 2000,
     "video_url": "https://www.youtube.com/watch?v=4_8GMROfhks"
   }
