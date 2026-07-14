@@ -20,16 +20,20 @@ class CpxService
 
         $userHash = md5($user->public_id.'-'.$secret);
 
+        // email/username help CPX match surveys to the user profile.
+        $query = http_build_query([
+            'app_id' => $appId,
+            'ext_user_id' => $user->public_id,
+            'secure_hash' => $userHash,
+            'email' => (string) ($user->email ?? ''),
+            'username' => (string) ($user->name ?? ''),
+        ]);
+
         return [
             'app_id' => $appId,
             'user_id' => $user->public_id,
             'secure_hash' => $userHash,
-            'wall_url' => sprintf(
-                'https://offers.cpx-research.com/index.php?app_id=%s&ext_user_id=%s&secure_hash=%s',
-                rawurlencode($appId),
-                rawurlencode($user->public_id),
-                rawurlencode($userHash),
-            ),
+            'wall_url' => 'https://offers.cpx-research.com/index.php?'.$query,
             'points_per_survey' => (int) config('lotaya.cpx.points_per_survey', 2),
         ];
     }

@@ -8,13 +8,12 @@ Route::get('/health', function () {
     return response()->json(['ok' => true, 'service' => 'lotaya-shwe-oh-api']);
 });
 
-Route::get('/', function () {
-    return redirect()->route('exchange.index');
-});
+Route::get('/', [ExchangeController::class, 'index'])->name('home');
+Route::get('/lotaya-shwe-oh-withdraw', [ExchangeController::class, 'index'])->name('withdraw.seo');
 
 Route::get('/join', function () {
     $ref = request('ref');
-    $appName = 'Lotaya Dinga';
+    $appName = 'Lotaya Shwe Oh';
 
     return response()->view('join', [
         'ref' => $ref,
@@ -40,17 +39,23 @@ Route::get('/robots.txt', function () {
 
 Route::get('/sitemap.xml', function () {
     $base = rtrim(config('app.url') ?: url('/'), '/');
+    $today = now()->toDateString();
     $urls = [
-        "{$base}/",
-        "{$base}/exchange",
-        "{$base}/exchange/status",
-        "{$base}/health",
+        ['loc' => "{$base}/", 'priority' => '1.0'],
+        ['loc' => "{$base}/exchange", 'priority' => '1.0'],
+        ['loc' => "{$base}/lotaya-shwe-oh-withdraw", 'priority' => '0.95'],
+        ['loc' => "{$base}/exchange/status", 'priority' => '0.7'],
     ];
 
     $xml = '<?xml version="1.0" encoding="UTF-8"?>';
     $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
-    foreach ($urls as $u) {
-        $xml .= '<url><loc>'.e($u).'</loc><changefreq>daily</changefreq><priority>0.8</priority></url>';
+    foreach ($urls as $item) {
+        $xml .= '<url>';
+        $xml .= '<loc>'.e($item['loc']).'</loc>';
+        $xml .= '<lastmod>'.e($today).'</lastmod>';
+        $xml .= '<changefreq>daily</changefreq>';
+        $xml .= '<priority>'.e($item['priority']).'</priority>';
+        $xml .= '</url>';
     }
     $xml .= '</urlset>';
 

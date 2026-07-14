@@ -3,16 +3,20 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Lotaya Shwe Oh Point Exchange')</title>
-    <meta name="description" content="@yield('meta_description', 'Lotaya Shwe Oh official point exchange website for withdraw requests and status tracking.')">
-    <meta name="keywords" content="@yield('meta_keywords', 'Lotaya Shwe Oh withdraw, Lotaya Shwe Oh point exchange, Lotaya Shwe Oh website')">
-    <meta name="robots" content="index,follow">
+    <title>@yield('title', 'Lotaya Shwe Oh Withdraw — Official Point Exchange')</title>
+    <meta name="description" content="@yield('meta_description', 'Lotaya Shwe Oh withdraw official website. Exchange points to KBZ Pay, Wave Pay or True Money.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'Lotaya Shwe Oh withdraw, Lotaya Shwe Oh, Lotaya Shwe Oh website, Lotaya Shwe Oh exchange')">
+    <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+    <meta name="googlebot" content="index,follow">
     <link rel="canonical" href="@yield('canonical', url()->current())">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="@yield('og_title', 'Lotaya Shwe Oh Point Exchange')">
-    <meta property="og:description" content="@yield('og_description', 'Official withdraw page for Lotaya Shwe Oh users.')">
+    <meta property="og:title" content="@yield('og_title', 'Lotaya Shwe Oh Withdraw')">
+    <meta property="og:description" content="@yield('og_description', 'Official Lotaya Shwe Oh withdraw and point exchange website.')">
     <meta property="og:url" content="@yield('canonical', url()->current())">
     <meta property="og:site_name" content="Lotaya Shwe Oh">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="@yield('og_title', 'Lotaya Shwe Oh Withdraw')">
+    <meta name="twitter:description" content="@yield('og_description', 'Official Lotaya Shwe Oh withdraw website.')">
     <style>
         :root {
             --gold: #b8860b;

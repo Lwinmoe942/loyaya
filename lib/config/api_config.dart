@@ -13,6 +13,12 @@ class ApiConfig {
 
   static const String exchangeUrl = String.fromEnvironment(
     'EXCHANGE_URL',
-    defaultValue: 'http://10.0.2.2:8000/exchange',
+    defaultValue: '',
   );
+
+  /// Prefer explicit EXCHANGE_URL; otherwise `{API_URL}/exchange`.
+  static String get exchangePageUrl {
+    if (exchangeUrl.isNotEmpty) return exchangeUrl;
+    return '${baseUrl.replaceAll(RegExp(r'/+$'), '')}/exchange';
+  }
 }

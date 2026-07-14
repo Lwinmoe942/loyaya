@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Lotaya Shwe Oh — Point Exchange')
-@section('meta_description', 'Lotaya Shwe Oh withdraw website. Submit point withdraw requests and track status online.')
-@section('meta_keywords', 'Lotaya Shwe Oh withdraw, Lotaya Shwe Oh website, Lotaya Shwe Oh exchange')
+@section('title', 'Lotaya Shwe Oh Withdraw — Official Point Exchange Website')
+@section('meta_description', 'Lotaya Shwe Oh withdraw official website. Exchange Lotaya Shwe Oh points to KBZ Pay, Wave Pay or True Money. Check withdraw status online.')
+@section('meta_keywords', 'Lotaya Shwe Oh withdraw, Lotaya Shwe Oh, Lotaya Shwe Oh website, Lotaya Shwe Oh exchange, Lotaya Shwe Oh point withdraw')
 @section('canonical', url('/exchange'))
-@section('og_title', 'Lotaya Shwe Oh Withdraw Website')
-@section('og_description', 'Official point exchange and withdraw status website for Lotaya Shwe Oh users.')
+@section('og_title', 'Lotaya Shwe Oh Withdraw — Official Website')
+@section('og_description', 'Official Lotaya Shwe Oh withdraw and point exchange website. Submit withdraw requests and track status.')
 
 @section('content')
 @php
@@ -27,9 +27,16 @@
 <script type="application/ld+json">
 {
   "@@context": "https://schema.org",
-  "@@type": "WebSite",
-  "name": "Lotaya Shwe Oh Point Exchange",
+  "@@type": "WebPage",
+  "name": "Lotaya Shwe Oh Withdraw",
+  "alternateName": ["Lotaya Shwe Oh Point Exchange", "Lotaya Shwe Oh website"],
+  "description": "Official Lotaya Shwe Oh withdraw website for exchanging app points to KBZ Pay, Wave Pay or True Money.",
   "url": "{{ url('/exchange') }}",
+  "isPartOf": {
+    "@@type": "WebSite",
+    "name": "Lotaya Shwe Oh",
+    "url": "{{ url('/') }}"
+  },
   "potentialAction": {
     "@@type": "SearchAction",
     "target": "{{ url('/exchange/status') }}",
@@ -40,10 +47,14 @@
 
 {{-- Main exchange form --}}
 <div class="card">
-    <h1>Lotaya Shwe Oh Point Exchange</h1>
+    <h1>Lotaya Shwe Oh Withdraw</h1>
     <p class="lead">
+        Official <strong>Lotaya Shwe Oh withdraw</strong> website.
         App ထဲက User ID နဲ့ point ထုတ်ယူပါ။ အနည်းဆုံး {{ number_format($minPoints) }} points၊
         {{ number_format($step) }} ဖြင့် စားပြတ်ရပါမယ်။
+    </p>
+    <p class="lead" style="margin-top:-8px;">
+        Lotaya Shwe Oh point exchange · Lotaya Shwe Oh website · KBZ Pay / Wave Pay / True Money
     </p>
 
     <div class="rates">

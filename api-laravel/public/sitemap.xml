@@ -8,7 +8,12 @@
   <url>
     <loc>https://lotaya-shwe-oh-production-d73b.up.railway.app/exchange</loc>
     <changefreq>daily</changefreq>
-    <priority>0.9</priority>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://lotaya-shwe-oh-production-d73b.up.railway.app/lotaya-shwe-oh-withdraw</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
   </url>
   <url>
     <loc>https://lotaya-shwe-oh-production-d73b.up.railway.app/exchange/status</loc>
