@@ -19,8 +19,29 @@ class RegionController extends Controller
             'allowed' => $result['allowed'],
             'country' => $result['country'],
             'reason' => $result['reason'],
+            'ip' => $this->maskIp($result['ip']),
             'blocked_countries' => $this->regions->blockedCountries(),
             'message' => $result['allowed'] ? null : $this->regions->blockMessage(),
         ]);
+    }
+
+    private function maskIp(?string $ip): ?string
+    {
+        if ($ip === null || $ip === '') {
+            return null;
+        }
+
+        if (str_contains($ip, ':')) {
+            $parts = explode(':', $ip);
+
+            return ($parts[0] ?? '').':***';
+        }
+
+        $parts = explode('.', $ip);
+        if (count($parts) !== 4) {
+            return '***';
+        }
+
+        return $parts[0].'.'.$parts[1].'.*.*';
     }
 }

@@ -14,7 +14,7 @@ class RegionService
      */
     public function evaluate(Request $request): array
     {
-        $ip = (string) $request->ip();
+        $ip = $this->clientIp($request);
 
         if (! $this->enabled()) {
             return [
@@ -84,7 +84,42 @@ class RegionService
 
     public function blockUnknown(): bool
     {
-        return (bool) config('lotaya.region_block.block_unknown', false);
+        return (bool) config('lotaya.region_block.block_unknown', true);
+    }
+
+    /**
+     * Prefer real client IP behind Railway / reverse proxies.
+     */
+    private function clientIp(Request $request): string
+    {
+        $candidates = [];
+
+        foreach (['CF-Connecting-IP', 'True-Client-IP', 'X-Real-IP'] as $header) {
+            $value = trim((string) $request->header($header, ''));
+            if ($value !== '') {
+                $candidates[] = $value;
+            }
+        }
+
+        $forwarded = (string) $request->header('X-Forwarded-For', '');
+        if ($forwarded !== '') {
+            foreach (explode(',', $forwarded) as $part) {
+                $part = trim($part);
+                if ($part !== '') {
+                    $candidates[] = $part;
+                }
+            }
+        }
+
+        $candidates[] = (string) $request->ip();
+
+        foreach ($candidates as $ip) {
+            if ($this->isPublicIp($ip)) {
+                return $ip;
+            }
+        }
+
+        return (string) ($candidates[0] ?? $request->ip());
     }
 
     private function resolveCountry(Request $request, string $ip): ?string
@@ -94,13 +129,14 @@ class RegionService
             return $header;
         }
 
-        $cacheKey = 'region.country.'.md5($ip);
+        $cacheKey = 'region.country.v2.'.md5($ip);
 
         return Cache::remember($cacheKey, now()->addHours(6), function () use ($ip): ?string {
             $code = $this->lookupViaIpApi($ip) ?? $this->lookupViaIpApiCo($ip);
             if ($code === null) {
                 Log::warning('Region lookup failed', ['ip' => $ip]);
             }
+
             return $code;
         });
     }
@@ -159,16 +195,21 @@ class RegionService
         }
     }
 
+    private function isPublicIp(string $ip): bool
+    {
+        return filter_var(
+            $ip,
+            FILTER_VALIDATE_IP,
+            FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE,
+        ) !== false;
+    }
+
     private function isPrivateIp(string $ip): bool
     {
         if ($ip === '127.0.0.1' || $ip === '::1') {
             return true;
         }
 
-        return filter_var(
-            $ip,
-            FILTER_VALIDATE_IP,
-            FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE,
-        ) === false;
+        return ! $this->isPublicIp($ip);
     }
 }

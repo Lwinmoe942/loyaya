@@ -52,7 +52,7 @@ return [
 
     'region_block' => [
         'enabled' => filter_var(env('REGION_BLOCK_ENABLED', true), FILTER_VALIDATE_BOOL),
-        'block_unknown' => filter_var(env('REGION_BLOCK_BLOCK_UNKNOWN', false), FILTER_VALIDATE_BOOL),
+        'block_unknown' => filter_var(env('REGION_BLOCK_BLOCK_UNKNOWN', true), FILTER_VALIDATE_BOOL),
         'blocked_countries' => array_values(array_filter(array_map(
             static fn (string $code): string => strtoupper(trim($code)),
             explode(',', (string) env('REGION_BLOCK_COUNTRIES', 'MM')),

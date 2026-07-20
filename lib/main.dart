@@ -4,6 +4,7 @@ import 'package:loyaya/screens/region_blocked_screen.dart';
 import 'package:loyaya/screens/shell_screen.dart';
 import 'package:loyaya/services/ad_service.dart';
 import 'package:loyaya/services/api_client.dart';
+import 'package:loyaya/services/device_region_service.dart';
 import 'package:loyaya/services/progress_service.dart';
 import 'package:loyaya/services/session_service.dart';
 import 'package:loyaya/theme/app_theme.dart';
@@ -39,6 +40,7 @@ class _AppRootState extends State<AppRoot> {
   final _api = ApiClient();
   final _session = SessionService();
   final _progress = ProgressService();
+  final _deviceRegion = DeviceRegionService();
   bool _ready = false;
   bool _loggedIn = false;
   bool _regionAllowed = true;
@@ -95,11 +97,9 @@ class _AppRootState extends State<AppRoot> {
           await _session.clear();
           _api.setToken(null);
         } else {
-          // Keep session on temporary server errors.
           _loggedIn = true;
         }
       } catch (_) {
-        // Keep session when offline or server is waking up.
         _loggedIn = true;
       }
     }
@@ -112,24 +112,67 @@ class _AppRootState extends State<AppRoot> {
   }
 
   Future<bool> _checkRegionAccess() async {
+    // 1) Device-side check (phone's real public IP)
+    final deviceCountry = await _deviceRegion.lookupCountryCode();
+    if (_deviceRegion.isBlockedCountry(deviceCountry)) {
+      _regionAllowed = false;
+      _regionCountry = deviceCountry;
+      _regionMessage = apiErrorMessage('REGION_BLOCKED');
+      return false;
+    }
+
+    // 2) Server-side check (Laravel /api/region)
     try {
       final region = await _api.checkRegion();
       final allowed = region['allowed'] == true;
-      _regionAllowed = allowed;
-      _regionCountry = region['country']?.toString();
-      _regionMessage = allowed
-          ? null
-          : (region['message']?.toString() ??
-                apiErrorMessage('REGION_BLOCKED'));
-      return allowed;
+      final serverCountry = region['country']?.toString();
+      _regionCountry = serverCountry ?? deviceCountry;
+
+      if (!allowed || _deviceRegion.isBlockedCountry(serverCountry)) {
+        _regionAllowed = false;
+        _regionMessage =
+            region['message']?.toString() ?? apiErrorMessage('REGION_BLOCKED');
+        return false;
+      }
+
+      if ((serverCountry == null || serverCountry.isEmpty) &&
+          (deviceCountry == null || deviceCountry.isEmpty)) {
+        _regionAllowed = false;
+        _regionMessage =
+            'Could not verify your region. Please connect a VPN and try again.';
+        return false;
+      }
+
+      _regionAllowed = true;
+      _regionMessage = null;
+      return true;
     } on ApiException catch (e) {
-      // Fail closed: do not let the app continue when region check fails.
+      if (e.error == 'REGION_BLOCKED') {
+        _regionAllowed = false;
+        _regionMessage = apiErrorMessage(e.error);
+        return false;
+      }
+
+      if (deviceCountry != null && deviceCountry.isNotEmpty) {
+        _regionAllowed = true;
+        _regionCountry = deviceCountry;
+        return true;
+      }
+
       _regionAllowed = false;
-      _regionMessage = e.error == 'REGION_BLOCKED'
-          ? apiErrorMessage(e.error)
-          : 'Could not verify your region. Please connect a VPN and try again.';
+      _regionMessage =
+          'Could not verify your region. Please connect a VPN and try again.';
       return false;
     } catch (_) {
+      if (deviceCountry != null && deviceCountry.isNotEmpty) {
+        _regionAllowed = !_deviceRegion.isBlockedCountry(deviceCountry);
+        _regionCountry = deviceCountry;
+        if (!_regionAllowed) {
+          _regionMessage = apiErrorMessage('REGION_BLOCKED');
+        }
+        return _regionAllowed;
+      }
+
       _regionAllowed = false;
       _regionMessage =
           'Could not verify your region. Please connect a VPN and try again.';
@@ -142,9 +185,7 @@ class _AppRootState extends State<AppRoot> {
       final history = await _api.history();
       await _progress.syncFromHistory(history);
       await _progress.syncLocksFromApi(_api);
-    } catch (_) {
-      // Non-blocking.
-    }
+    } catch (_) {}
   }
 
   void _onLoggedIn() {
