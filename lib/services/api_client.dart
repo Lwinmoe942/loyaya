@@ -17,9 +17,9 @@ class ApiClient {
   void setToken(String? token) => _token = token;
 
   Map<String, String> get _headers => {
-        'Content-Type': 'application/json',
-        if (_token != null) 'Authorization': 'Bearer $_token',
-      };
+    'Content-Type': 'application/json',
+    if (_token != null) 'Authorization': 'Bearer $_token',
+  };
 
   /// Pings the API so Render free tier can wake before sign-up/login.
   Future<bool> wakeServer() async {
@@ -32,6 +32,16 @@ class ApiClient {
     } catch (_) {
       return false;
     }
+  }
+
+  /// Public region gate. Myanmar IP is blocked unless the user is on a VPN
+  /// that exits outside Myanmar.
+  Future<Map<String, dynamic>> checkRegion() async {
+    final res = await _get(
+      Uri.parse('${ApiConfig.baseUrl}/api/region'),
+      headers: const {'Accept': 'application/json'},
+    );
+    return _parse(res);
   }
 
   Future<Map<String, dynamic>> register({
@@ -66,10 +76,7 @@ class ApiClient {
       final res = await _post(
         Uri.parse('${ApiConfig.baseUrl}/api/auth/login'),
         headers: _headers,
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-        }),
+        body: jsonEncode({'email': email, 'password': password}),
       );
       return _parse(res);
     });
@@ -213,11 +220,7 @@ class ApiClient {
     final res = await _post(
       Uri.parse('${ApiConfig.baseUrl}/api/courses/apply'),
       headers: _headers,
-      body: jsonEncode({
-        'course_id': courseId,
-        'name': name,
-        'phone': phone,
-      }),
+      body: jsonEncode({'course_id': courseId, 'name': name, 'phone': phone}),
     );
     return _parse(res);
   }
@@ -253,10 +256,7 @@ class ApiClient {
     final res = await _post(
       Uri.parse('${ApiConfig.baseUrl}/api/content/fail'),
       headers: _headers,
-      body: jsonEncode({
-        'content_type': contentType,
-        'content_id': contentId,
-      }),
+      body: jsonEncode({'content_type': contentType, 'content_id': contentId}),
     );
     return _parse(res);
   }
@@ -294,10 +294,7 @@ class ApiClient {
     final res = await _post(
       Uri.parse('${ApiConfig.baseUrl}/api/games/tic-tac-toe'),
       headers: _headers,
-      body: jsonEncode({
-        'match_id': matchId,
-        'difficulty': difficulty,
-      }),
+      body: jsonEncode({'match_id': matchId, 'difficulty': difficulty}),
     );
     return _parse(res);
   }
@@ -360,11 +357,7 @@ class ApiClient {
     final res = await _post(
       Uri.parse('${ApiConfig.baseUrl}/api/ai/text-to-voice'),
       headers: _headers,
-      body: jsonEncode({
-        'text': text,
-        'voice': voice,
-        'request_id': requestId,
-      }),
+      body: jsonEncode({'text': text, 'voice': voice, 'request_id': requestId}),
     );
     return _parse(res);
   }
@@ -452,13 +445,13 @@ class ApiClient {
       );
     }
     if (res.statusCode >= 400) {
-      final message = data['error'] ??
+      final message =
+          data['error'] ??
           data['message'] ??
-          (res.statusCode == 404 ? 'API_NOT_FOUND_CHECK_URL' : 'REQUEST_FAILED');
-      throw ApiException(
-        statusCode: res.statusCode,
-        error: message.toString(),
-      );
+          (res.statusCode == 404
+              ? 'API_NOT_FOUND_CHECK_URL'
+              : 'REQUEST_FAILED');
+      throw ApiException(statusCode: res.statusCode, error: message.toString());
     }
     return data;
   }
@@ -478,12 +471,14 @@ String apiErrorMessage(String error) {
   final isRenderHost = ApiConfig.baseUrl.contains('onrender.com');
 
   return switch (error) {
-    'REQUEST_TIMEOUT' => isRenderHost
-        ? 'Server is slow to respond. Free hosting may take up to 60 seconds on first request. Please try again.'
-        : 'Cannot reach the API server. Ensure php artisan serve is running, phone and PC are on the same Wi-Fi, and use your PC IP (not 10.0.2.2) on a physical device.',
-    'NETWORK_ERROR' => isRenderHost
-        ? 'Cannot reach the server. Check your internet connection and try again.'
-        : 'Network error. Use your PC Wi-Fi IP in API_URL (e.g. http://192.168.x.x:8000), not 10.0.2.2 on a real phone.',
+    'REQUEST_TIMEOUT' =>
+      isRenderHost
+          ? 'Server is slow to respond. Free hosting may take up to 60 seconds on first request. Please try again.'
+          : 'Cannot reach the API server. Ensure php artisan serve is running, phone and PC are on the same Wi-Fi, and use your PC IP (not 10.0.2.2) on a physical device.',
+    'NETWORK_ERROR' =>
+      isRenderHost
+          ? 'Cannot reach the server. Check your internet connection and try again.'
+          : 'Network error. Use your PC Wi-Fi IP in API_URL (e.g. http://192.168.x.x:8000), not 10.0.2.2 on a real phone.',
     'EMAIL_EXISTS' => 'This email already has an account. Please sign in.',
     'LOCKED_TRY_TOMORROW' =>
       'You answered wrong today. Please try again tomorrow.',
@@ -491,7 +486,8 @@ String apiErrorMessage(String error) {
     'ALREADY_REDEEMED' => 'You already redeemed this gift code.',
     'EXPIRED' => 'This gift code has expired.',
     'MAX_USES' => 'This gift code has reached its use limit.',
-    'ALREADY_PLAYED_TODAY' => 'You already played this game today. Come back tomorrow!',
+    'ALREADY_PLAYED_TODAY' =>
+      'You already played this game today. Come back tomorrow!',
     'SCRATCH_COOLDOWN' => 'Please wait 5 minutes before scratching again.',
     'TIC_TAC_TOE_LOSS_COOLDOWN' => 'Please wait before playing again.',
     'INSUFFICIENT_POINTS' => 'Not enough points for this AI action.',
@@ -510,6 +506,8 @@ String apiErrorMessage(String error) {
     'CPX_NOT_CONFIGURED' =>
       'Surveys are not configured on the server yet. Please try again later.',
     'Server Error' => 'Server error while claiming points. Please try again.',
+    'REGION_BLOCKED' =>
+      'This app is not available from Myanmar network locations. Please connect a VPN and try again.',
     'INVALID_CREDENTIALS' => 'Invalid email or password.',
     'VALIDATION_ERROR' => 'Please check your input and try again.',
     'API_NOT_FOUND_CHECK_URL' =>

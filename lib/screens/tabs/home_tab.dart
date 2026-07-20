@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:loyaya/screens/ai_tools_screen.dart';
 import 'package:loyaya/screens/games_screen.dart';
@@ -8,8 +10,7 @@ import 'package:loyaya/screens/tutorials_screen.dart';
 import 'package:loyaya/screens/watch_screen.dart';
 import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/theme/app_theme.dart';
-import 'package:loyaya/screens/cpx_survey_screen.dart';
-import 'package:loyaya/widgets/coming_soon_dialog.dart';
+import 'package:loyaya/screens/survey_list_screen.dart';
 import 'package:loyaya/widgets/earn_grid_item.dart';
 
 class HomeTab extends StatefulWidget {
@@ -72,14 +73,13 @@ class _HomeTabState extends State<HomeTab> {
           children: [
             Row(
               children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
+                ClipOval(
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    width: 48,
+                    height: 48,
+                    fit: BoxFit.cover,
                   ),
-                  child: const Icon(Icons.monetization_on, color: Colors.white),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -113,40 +113,7 @@ class _HomeTabState extends State<HomeTab> {
               ],
             ),
             const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF7E57C2), Color(0xFF42A5F5)],
-                ),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Earn Points Daily',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${widget.balance} pts · ${widget.tier} · 1 pt = ${widget.rate} MMK',
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.stars, color: Colors.amber, size: 40),
-                ],
-              ),
-            ),
+            const _PromoBannerCarousel(),
             const SizedBox(height: 20),
             GridView.count(
               crossAxisCount: 3,
@@ -165,7 +132,11 @@ class _HomeTabState extends State<HomeTab> {
                       color: AppColors.primary,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.check, color: Colors.white, size: 10),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 10,
+                    ),
                   ),
                   onTap: _checkIn,
                 ),
@@ -179,7 +150,7 @@ class _HomeTabState extends State<HomeTab> {
                   label: 'Survey',
                   icon: Icons.poll_outlined,
                   color: const Color(0xFF42A5F5),
-                  onTap: () => _open(CpxSurveyScreen(api: widget.api)),
+                  onTap: () => _open(SurveyListScreen(api: widget.api)),
                 ),
                 EarnGridItem(
                   label: 'Scratch',
@@ -235,6 +206,183 @@ class _HomeTabState extends State<HomeTab> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _PromoSlide {
+  const _PromoSlide({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.colors,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final List<Color> colors;
+}
+
+class _PromoBannerCarousel extends StatefulWidget {
+  const _PromoBannerCarousel();
+
+  @override
+  State<_PromoBannerCarousel> createState() => _PromoBannerCarouselState();
+}
+
+class _PromoBannerCarouselState extends State<_PromoBannerCarousel> {
+  static const List<_PromoSlide> _slides = [
+    _PromoSlide(
+      title: 'Points ယူမယ်ဆို နေ့တိုင်း\nDaily Check In ဝင်ဖို့ မမေ့ပါနဲ့နော်',
+      subtitle: 'DO YOU KNOW?',
+      icon: Icons.check_circle,
+      colors: [Color(0xFF6A1B9A), Color(0xFFAD1457)],
+    ),
+    _PromoSlide(
+      title: 'ခဲခြစ်ရင်းနဲ့ Points\nကံထူးနိုင်တယ်နော်',
+      subtitle: 'SCRATCH & WIN',
+      icon: Icons.style,
+      colors: [Color(0xFFF9A825), Color(0xFFF57F17)],
+    ),
+    _PromoSlide(
+      title:
+          'Tutorials ထဲမှာ Points ယူနည်းတွေ\nကြည့်လို့ရတယ်ဆိုတာ သိပြီးပြီလား',
+      subtitle: 'TUTORIALS',
+      icon: Icons.play_circle_fill,
+      colors: [Color(0xFF1A1A2E), Color(0xFF16213E)],
+    ),
+    _PromoSlide(
+      title: 'သင်္ချာတွက်ရင်း Points ရနိုင်တယ်\nMath Quiz ကို စမ်းကြည့်ပါ',
+      subtitle: 'MATH QUIZ',
+      icon: Icons.calculate,
+      colors: [Color(0xFF283593), Color(0xFF1565C0)],
+    ),
+  ];
+
+  final PageController _controller = PageController();
+  Timer? _timer;
+  int _page = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted || !_controller.hasClients) return;
+      final next = (_page + 1) % _slides.length;
+      _controller.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 170,
+          child: PageView.builder(
+            controller: _controller,
+            itemCount: _slides.length,
+            onPageChanged: (index) => setState(() => _page = index),
+            itemBuilder: (context, index) {
+              final slide = _slides[index];
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: slide.colors,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              slide.subtitle,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            slide.title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(slide.icon, color: Colors.white, size: 36),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(_slides.length, (index) {
+            final active = index == _page;
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              width: active ? 18 : 7,
+              height: 7,
+              decoration: BoxDecoration(
+                color: active
+                    ? AppColors.primary
+                    : AppColors.primary.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            );
+          }),
+        ),
+      ],
     );
   }
 }

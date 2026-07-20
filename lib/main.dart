@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:loyaya/screens/auth_screen.dart';
+import 'package:loyaya/screens/region_blocked_screen.dart';
 import 'package:loyaya/screens/shell_screen.dart';
 import 'package:loyaya/services/ad_service.dart';
 import 'package:loyaya/services/api_client.dart';
@@ -40,7 +41,10 @@ class _AppRootState extends State<AppRoot> {
   final _progress = ProgressService();
   bool _ready = false;
   bool _loggedIn = false;
+  bool _regionAllowed = true;
   String? _bootMessage;
+  String? _regionMessage;
+  String? _regionCountry;
 
   @override
   void initState() {
@@ -49,12 +53,32 @@ class _AppRootState extends State<AppRoot> {
   }
 
   Future<void> _bootstrap() async {
-    setState(() => _bootMessage = 'Connecting to server...');
+    setState(() {
+      _ready = false;
+      _bootMessage = 'Connecting to server...';
+      _regionAllowed = true;
+      _regionMessage = null;
+      _regionCountry = null;
+    });
 
     final wakeFuture = _api.wakeServer();
     final token = await _session.loadToken();
 
     await wakeFuture;
+
+    setState(() => _bootMessage = 'Checking region...');
+
+    final regionOk = await _checkRegionAccess();
+    if (!regionOk) {
+      if (mounted) {
+        setState(() {
+          _ready = true;
+          _bootMessage = null;
+          _loggedIn = false;
+        });
+      }
+      return;
+    }
 
     if (token != null) {
       _api.setToken(token);
@@ -63,7 +87,11 @@ class _AppRootState extends State<AppRoot> {
         _loggedIn = true;
         await _syncProgress();
       } on ApiException catch (e) {
-        if (e.statusCode == 401) {
+        if (e.error == 'REGION_BLOCKED') {
+          _regionAllowed = false;
+          _regionMessage = apiErrorMessage(e.error);
+          _loggedIn = false;
+        } else if (e.statusCode == 401) {
           await _session.clear();
           _api.setToken(null);
         } else {
@@ -80,6 +108,32 @@ class _AppRootState extends State<AppRoot> {
         _ready = true;
         _bootMessage = null;
       });
+    }
+  }
+
+  Future<bool> _checkRegionAccess() async {
+    try {
+      final region = await _api.checkRegion();
+      final allowed = region['allowed'] == true;
+      _regionAllowed = allowed;
+      _regionCountry = region['country']?.toString();
+      _regionMessage = allowed
+          ? null
+          : (region['message']?.toString() ??
+                apiErrorMessage('REGION_BLOCKED'));
+      return allowed;
+    } on ApiException catch (e) {
+      // Fail closed: do not let the app continue when region check fails.
+      _regionAllowed = false;
+      _regionMessage = e.error == 'REGION_BLOCKED'
+          ? apiErrorMessage(e.error)
+          : 'Could not verify your region. Please connect a VPN and try again.';
+      return false;
+    } catch (_) {
+      _regionAllowed = false;
+      _regionMessage =
+          'Could not verify your region. Please connect a VPN and try again.';
+      return false;
     }
   }
 
@@ -127,12 +181,18 @@ class _AppRootState extends State<AppRoot> {
       );
     }
 
-    if (!_loggedIn) {
-      return AuthScreen(
-        api: _api,
-        session: _session,
-        onLoggedIn: _onLoggedIn,
+    if (!_regionAllowed) {
+      return RegionBlockedScreen(
+        message:
+            _regionMessage ??
+            'Lotaya Shwe Oh is not available from Myanmar network locations. Please connect a VPN and try again.',
+        country: _regionCountry,
+        onRetry: _bootstrap,
       );
+    }
+
+    if (!_loggedIn) {
+      return AuthScreen(api: _api, session: _session, onLoggedIn: _onLoggedIn);
     }
 
     return ShellScreen(

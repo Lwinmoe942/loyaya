@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.key' => \App\Http\Middleware\AdminApiKey::class,
             'admin.session' => \App\Http\Middleware\AdminSession::class,
             'admin.access' => \App\Http\Middleware\AdminAccess::class,
+            'region.block' => \App\Http\Middleware\BlockMyanmarRegion::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

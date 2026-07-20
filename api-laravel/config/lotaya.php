@@ -49,4 +49,17 @@ return [
             explode(',', (string) env('CPX_ALLOWED_IPS', '')),
         ))),
     ],
+
+    'region_block' => [
+        'enabled' => filter_var(env('REGION_BLOCK_ENABLED', true), FILTER_VALIDATE_BOOL),
+        'block_unknown' => filter_var(env('REGION_BLOCK_BLOCK_UNKNOWN', false), FILTER_VALIDATE_BOOL),
+        'blocked_countries' => array_values(array_filter(array_map(
+            static fn (string $code): string => strtoupper(trim($code)),
+            explode(',', (string) env('REGION_BLOCK_COUNTRIES', 'MM')),
+        ))),
+        'message' => env(
+            'REGION_BLOCK_MESSAGE',
+            'Lotaya Shwe Oh is not available from Myanmar network locations. Please connect a VPN and try again.',
+        ),
+    ],
 ];

@@ -60,7 +60,7 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: assets/images/splash.png
-  adaptive_icon_background: "#FFF8E7"
+  adaptive_icon_background: "#000000"
   adaptive_icon_foreground: assets/images/splash.png
   web:
     generate: true
@@ -85,7 +85,9 @@ flutter:
 
   assets:
     - assets/images/splash.png
+    - assets/images/logo.png
     - assets/content/math_quizzes.json
+    - assets/content/surveys.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

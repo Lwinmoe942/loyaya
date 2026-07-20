@@ -1,0 +1,40 @@
+---
+description: Survey vs Games monetization plan — local survey, Adjoe for Games only
+alwaysApply: true
+---
+
+# Lotaya — Survey & Games Monetization
+
+## Current (shipped / keep)
+
+| Area | Status |
+|------|--------|
+| **Survey (Home)** | **Local only** — `SurveyListScreen` + `assets/content/surveys.json`. Do **not** switch Home Survey back to CPX / offerwall unless the user explicitly asks. |
+| **CPX** | Deprecated for UI. Files may remain unused; do not wire into Home again by default. |
+| **Lootably** | Abandoned (not approved). Do not integrate. |
+| **Games now** | Scratch + Spin (+ TicTacToe still in code; plan is to remove TicTacToe). |
+
+## Adjoe Playtime (pending — Games only)
+
+- Adjoe is for **Games / Playtime**, **not** for Survey.
+- Waiting on partnerships reply (`contact@adjoe.io` / Monetize form). Publisher email: `moegyi707299@gmail.com`.
+- **Do not** integrate Adjoe SDK until approved + MM inventory confirmed.
+- When integrating: Games tab / Play and Earn — Flutter Playtime SDK + S2S rewards. Leave Survey as local.
+
+## Monlix (exploring while waiting for Adjoe)
+
+- Offerwall (offers / games / surveys) — candidate for **Games**, not a replacement for local Survey by default.
+- Self-serve: https://publisher.monlix.com/register — site approval up to ~3 business days.
+- Integrate only after approval + confirm MM inventory. Prefer WebView iframe + S2S postback (Flutter-friendly); Android SDK optional.
+- Docs: https://docs.monlix.com/ — support: support@monlix.com / live chat.
+- Do **not** remove Adjoe plan; Monlix is a parallel try.
+
+## Planned Games tab (target)
+
+1. Keep Scratch + Spin  
+2. Remove TicTacToe  
+3. Add Adjoe Playtime **and/or** Monlix offerwall (whichever approves + has MM inventory)
+
+## Exchange / withdraw
+
+- No in-app cash withdraw UI (Play Store). Exchange is web-only. Do not re-add Profile Exchange/Withdraw links unless the user asks.
