@@ -3,7 +3,7 @@
 @section('title', 'Privacy Policy — Lotaya Shwe Oh')
 @section('meta_description', 'Privacy Policy for the Lotaya Shwe Oh learning app by U5AI Digital.')
 @section('meta_keywords', 'Lotaya Shwe Oh privacy policy, U5AI Digital')
-@section('canonical', 'https://u5aidigital.com/privacy-policy/')
+@section('canonical', 'https://u5aidigital.com/privacy-policy/index.html')
 @section('og_title', 'Privacy Policy — Lotaya Shwe Oh')
 @section('og_description', 'How Lotaya Shwe Oh collects, uses, and protects account and device data.')
 
@@ -18,7 +18,8 @@
     <p>
         Related documents:
         <a href="https://u5aidigital.com/terms-of-use/index.html" rel="noopener">Terms of Use</a> ·
-        <a href="https://u5aidigital.com/content-policy/index.html" rel="noopener">Content Policy</a>
+        <a href="https://u5aidigital.com/content-policy/index.html" rel="noopener">Content Policy</a> ·
+        <a href="https://u5aidigital.com/account-deletion/index.html" rel="noopener">Account Deletion Policy</a>
     </p>
     <p class="lead" style="margin-top:1rem;">Summary</p>
     <p>This page is a short mirror for app users. Lotaya Shwe Oh is a learning and engagement app operated by U5AI Digital. Points are virtual learning units — not cash. The mobile app does not provide cash withdrawal.</p>
@@ -30,8 +31,10 @@
         <li>Optional microphone for on-device Record to Text</li>
     </ul>
     <p>
-        Delete your account in the app (Profile → Delete Account) or on the
-        <a href="{{ route('account-deletion') }}">account deletion page</a>.
+        Delete your account in the app (Profile → Delete Account), via the
+        <a href="{{ route('account-deletion') }}">web deletion form</a>,
+        or read the full
+        <a href="https://u5aidigital.com/account-deletion/index.html" rel="noopener">Account Deletion Policy</a>.
     </p>
     <p>
         Official website: <a href="https://u5aidigital.com" rel="noopener">https://u5aidigital.com</a><br>

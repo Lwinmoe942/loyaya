@@ -16,6 +16,12 @@
     <p>Deleting your account permanently removes your profile, points history, and related app data. This cannot be undone.</p>
 
     <p>You can also delete from the app: <strong>Profile → Delete Account</strong>.</p>
+    <p>
+        Full policy (what is deleted / retained / timing):
+        <a href="https://u5aidigital.com/account-deletion/index.html" rel="noopener">
+            https://u5aidigital.com/account-deletion/index.html
+        </a>
+    </p>
 
     @if (session('status'))
         <div class="empty-state" style="margin-top:16px;color:var(--ok);">{{ session('status') }}</div>

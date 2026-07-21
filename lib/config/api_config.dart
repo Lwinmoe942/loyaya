@@ -33,6 +33,11 @@ class ApiConfig {
   static const String contentPolicyUrl =
       'https://u5aidigital.com/content-policy/index.html';
 
-  static String get accountDeletionUrl =>
+  /// Play Console Data safety → Account deletion URL (public web resource).
+  static const String accountDeletionUrl =
+      'https://u5aidigital.com/account-deletion/index.html';
+
+  /// Direct deletion form (password-verified). Linked from the policy page.
+  static String get accountDeletionFormUrl =>
       '${baseUrl.replaceAll(RegExp(r'/+$'), '')}/account-deletion';
 }
