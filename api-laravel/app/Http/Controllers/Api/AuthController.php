@@ -97,4 +97,29 @@ class AuthController extends Controller
             'token' => $request->attributes->get('auth_token'),
         ]);
     }
+
+    public function destroy(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'password' => ['required', 'string'],
+        ]);
+
+        /** @var User $user */
+        $user = $request->attributes->get('auth_user');
+        if (! $user || ! Hash::check($data['password'], $user->password)) {
+            return response()->json(['error' => 'INVALID_CREDENTIALS'], 401);
+        }
+
+        // Null out referrals pointing at this user, then delete (cascades related rows).
+        User::query()
+            ->where('referred_by_user_id', $user->id)
+            ->update(['referred_by_user_id' => null]);
+
+        $user->delete();
+
+        return response()->json([
+            'ok' => true,
+            'message' => 'Account and associated data deleted.',
+        ]);
+    }
 }

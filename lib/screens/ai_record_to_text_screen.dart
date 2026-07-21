@@ -37,13 +37,52 @@ class _AiRecordToTextScreenState extends State<AiRecordToTextScreen> {
   @override
   void initState() {
     super.initState();
-    _initSpeech();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _prepareSpeech());
   }
 
   @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _prepareSpeech() async {
+    // Play User Data policy: explain microphone use before permission prompt.
+    if (!mounted) return;
+    final accepted = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Microphone access'),
+        content: const Text(
+          'Record to Text uses your microphone only for on-device speech '
+          'recognition so your speech can be turned into text. Audio is not '
+          'used for advertising. If you convert text, the transcript may be '
+          'sent to our servers to complete the feature.\n\n'
+          'You can deny microphone access and still use other app features.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Not now'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Continue'),
+          ),
+        ],
+      ),
+    );
+
+    if (accepted != true || !mounted) {
+      setState(() {
+        _ready = false;
+        _status = 'Microphone permission was not granted.';
+      });
+      return;
+    }
+
+    await _initSpeech();
   }
 
   Future<void> _initSpeech() async {

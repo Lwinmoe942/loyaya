@@ -120,7 +120,7 @@ class _LeaderboardTabState extends State<LeaderboardTab> {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          'Earn points daily and climb the ranks!',
+                          'Collect points daily and climb the ranks!',
                           style: TextStyle(color: Colors.white70, fontSize: 12),
                         ),
                       ],

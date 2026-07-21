@@ -31,6 +31,8 @@ Route::middleware('region.block')->group(function () {
 
     Route::middleware('api.token')->group(function () {
         Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::delete('/auth/account', [AuthController::class, 'destroy']);
+        Route::post('/auth/account/delete', [AuthController::class, 'destroy']);
         Route::get('/points/balance', [PointsController::class, 'balance']);
         Route::get('/points/history', [PointsController::class, 'history']);
         Route::post('/points/earn', [PointsController::class, 'earn']);

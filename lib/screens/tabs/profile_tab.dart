@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loyaya/config/api_config.dart';
 import 'package:loyaya/screens/referral_screen.dart';
 import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/theme/app_theme.dart';
@@ -30,6 +31,79 @@ class ProfileTab extends StatelessWidget {
     final dt = DateTime.tryParse(created);
     if (dt == null) return 0;
     return DateTime.now().difference(dt).inDays.clamp(0, 9999);
+  }
+
+  Future<void> _confirmDeleteAccount(BuildContext context) async {
+    final passwordController = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Delete Account'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'This permanently deletes your account, points, and related '
+                'data. This cannot be undone.',
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Confirm with password',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !context.mounted) {
+      passwordController.dispose();
+      return;
+    }
+
+    final password = passwordController.text;
+    passwordController.dispose();
+    if (password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password is required.')),
+      );
+      return;
+    }
+
+    try {
+      await api.deleteAccount(password: password);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Account deleted.')),
+      );
+      onLogout();
+    } on ApiException catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(apiErrorMessage(e.error))),
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not delete account. Try again.')),
+      );
+    }
   }
 
   @override
@@ -173,11 +247,24 @@ class ProfileTab extends StatelessWidget {
               ),
             ),
             _MenuTile(
+              icon: Icons.privacy_tip_outlined,
+              title: 'Privacy Policy',
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const _PrivacyScreen()),
+              ),
+            ),
+            _MenuTile(
               icon: Icons.description_outlined,
               title: 'Terms & Conditions',
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const _TermsScreen()),
               ),
+            ),
+            _MenuTile(
+              icon: Icons.delete_forever_outlined,
+              title: 'Delete Account',
+              titleColor: AppColors.primary,
+              onTap: () => _confirmDeleteAccount(context),
             ),
             _MenuTile(
               icon: Icons.info_outline,
@@ -213,15 +300,13 @@ class _TermsScreen extends StatelessWidget {
   const _TermsScreen();
 
   static final Uri _website = Uri.parse('https://u5aidigital.com');
+  static final Uri _telegram = Uri.parse('https://t.me/lotayashweoh');
 
-  Future<void> _openWebsite(BuildContext context) async {
-    final opened = await launchUrl(
-      _website,
-      mode: LaunchMode.externalApplication,
-    );
+  Future<void> _openUrl(BuildContext context, Uri url, String label) async {
+    final opened = await launchUrl(url, mode: LaunchMode.externalApplication);
     if (!opened && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open the website.')),
+        SnackBar(content: Text('Could not open $label.')),
       );
     }
   }
@@ -337,16 +422,26 @@ class _TermsScreen extends StatelessWidget {
             title: '12. Official Contact',
             body:
                 'For official information, support, or questions about these '
-                'terms, use the website below. Do not trust unofficial agents, '
-                'social media accounts, private messages, or websites claiming '
-                'to represent Lotaya Shwe Oh.',
-            footer: Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: () => _openWebsite(context),
-                icon: const Icon(Icons.language),
-                label: const Text('https://u5aidigital.com'),
-              ),
+                'terms, use the official website or Telegram channel below. '
+                'Do not trust unofficial agents, social media accounts, '
+                'private messages, or websites claiming to represent '
+                'Lotaya Shwe Oh.',
+            footer: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextButton.icon(
+                  onPressed: () =>
+                      _openUrl(context, _website, 'the website'),
+                  icon: const Icon(Icons.language),
+                  label: const Text('https://u5aidigital.com'),
+                ),
+                TextButton.icon(
+                  onPressed: () =>
+                      _openUrl(context, _telegram, 'Telegram'),
+                  icon: const Icon(Icons.send_outlined),
+                  label: const Text('https://t.me/lotayashweoh'),
+                ),
+              ],
             ),
           ),
         ],
@@ -359,15 +454,13 @@ class _AboutScreen extends StatelessWidget {
   const _AboutScreen();
 
   static final Uri _website = Uri.parse('https://u5aidigital.com');
+  static final Uri _telegram = Uri.parse('https://t.me/lotayashweoh');
 
-  Future<void> _openWebsite(BuildContext context) async {
-    final opened = await launchUrl(
-      _website,
-      mode: LaunchMode.externalApplication,
-    );
+  Future<void> _openUrl(BuildContext context, Uri url, String label) async {
+    final opened = await launchUrl(url, mode: LaunchMode.externalApplication);
     if (!opened && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open the website.')),
+        SnackBar(content: Text('Could not open $label.')),
       );
     }
   }
@@ -415,7 +508,8 @@ class _AboutScreen extends StatelessWidget {
                 'anyone.\n\n'
                 'Be careful of unofficial pages, groups, messages, agents, or '
                 'websites claiming to represent Lotaya Shwe Oh. Always verify '
-                'information through the official website below.',
+                'information through the official website or Telegram channel '
+                'below.',
           ),
           _InfoCard(
             title: 'Developer Information',
@@ -426,13 +520,111 @@ class _AboutScreen extends StatelessWidget {
                 'Shibazono 1-Chome 1-26, Yume House, Room 103\n'
                 'Kawaguchi City, Saitama 333-0854\n'
                 'Japan',
-            footer: Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: () => _openWebsite(context),
-                icon: const Icon(Icons.language),
-                label: const Text('https://u5aidigital.com'),
-              ),
+            footer: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextButton.icon(
+                  onPressed: () =>
+                      _openUrl(context, _website, 'the website'),
+                  icon: const Icon(Icons.language),
+                  label: const Text('https://u5aidigital.com'),
+                ),
+                TextButton.icon(
+                  onPressed: () =>
+                      _openUrl(context, _telegram, 'Telegram'),
+                  icon: const Icon(Icons.send_outlined),
+                  label: const Text('https://t.me/lotayashweoh'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PrivacyScreen extends StatelessWidget {
+  const _PrivacyScreen();
+
+  static final Uri _website = Uri.parse('https://u5aidigital.com');
+  static final Uri _telegram = Uri.parse('https://t.me/lotayashweoh');
+  static final Uri _fullPolicy = Uri.parse(ApiConfig.privacyPolicyUrl);
+  static final Uri _deleteWeb = Uri.parse(ApiConfig.accountDeletionUrl);
+
+  Future<void> _openUrl(BuildContext context, Uri url, String label) async {
+    final opened = await launchUrl(url, mode: LaunchMode.externalApplication);
+    if (!opened && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not open $label.')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Privacy Policy')),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        children: [
+          const _InfoCard(
+            title: 'Summary',
+            body:
+                'Lotaya Shwe Oh collects account details (name, email, hashed '
+                'password, optional phone), app activity (points and feature '
+                'history), and IP-based country for region access control. '
+                'We do not use GPS location permission.\n\n'
+                'Optional ads are provided by Google AdMob. The optional Record '
+                'to Text tool uses the microphone for on-device speech '
+                'recognition; we do not use microphone access for advertising.',
+          ),
+          const _InfoCard(
+            title: 'Points and payments',
+            body:
+                'Points are virtual in-app units. The mobile app does not offer '
+                'cash withdrawal, money transfer, or point selling.',
+          ),
+          const _InfoCard(
+            title: 'Account deletion',
+            body:
+                'You can delete your account anytime from Profile → Delete '
+                'Account, or use the web deletion page linked below. Deletion '
+                'removes your account and associated app data from our systems.',
+          ),
+          _InfoCard(
+            title: 'Full policy & contacts',
+            body:
+                'Read the full Privacy Policy on our website. Official contacts '
+                'are listed below. Do not trust unofficial accounts.',
+            footer: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextButton.icon(
+                  onPressed: () =>
+                      _openUrl(context, _fullPolicy, 'Privacy Policy'),
+                  icon: const Icon(Icons.privacy_tip_outlined),
+                  label: const Text('Open full Privacy Policy'),
+                ),
+                TextButton.icon(
+                  onPressed: () =>
+                      _openUrl(context, _deleteWeb, 'account deletion'),
+                  icon: const Icon(Icons.delete_forever_outlined),
+                  label: const Text('Web account deletion'),
+                ),
+                TextButton.icon(
+                  onPressed: () =>
+                      _openUrl(context, _website, 'the website'),
+                  icon: const Icon(Icons.language),
+                  label: const Text('https://u5aidigital.com'),
+                ),
+                TextButton.icon(
+                  onPressed: () =>
+                      _openUrl(context, _telegram, 'Telegram'),
+                  icon: const Icon(Icons.send_outlined),
+                  label: const Text('https://t.me/lotayashweoh'),
+                ),
+              ],
             ),
           ),
         ],

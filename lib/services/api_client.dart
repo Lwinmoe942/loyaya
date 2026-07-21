@@ -92,6 +92,17 @@ class ApiClient {
     });
   }
 
+  Future<Map<String, dynamic>> deleteAccount({required String password}) async {
+    return _withRetry(() async {
+      final res = await _post(
+        Uri.parse('${ApiConfig.baseUrl}/api/auth/account/delete'),
+        headers: _headers,
+        body: jsonEncode({'password': password}),
+      );
+      return _parse(res);
+    });
+  }
+
   Future<Map<String, dynamic>> balance() async {
     final res = await _get(
       Uri.parse('${ApiConfig.baseUrl}/api/points/balance'),

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminPanelController;
 use App\Http\Controllers\ExchangeController;
+use App\Http\Controllers\LegalController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', function () {
@@ -26,6 +27,12 @@ Route::post('/exchange', [ExchangeController::class, 'submit'])->name('exchange.
 Route::get('/exchange/status', [ExchangeController::class, 'status'])->name('exchange.status.form');
 Route::post('/exchange/status', [ExchangeController::class, 'statusCheck'])->name('exchange.status.check');
 
+Route::get('/privacy', [LegalController::class, 'privacy'])->name('privacy');
+Route::get('/account-deletion', [LegalController::class, 'accountDeletionForm'])->name('account-deletion');
+Route::post('/account-deletion', [LegalController::class, 'accountDeletionSubmit'])
+    ->middleware('throttle:5,1')
+    ->name('account-deletion.submit');
+
 Route::get('/robots.txt', function () {
     $base = rtrim(config('app.url') ?: url('/'), '/');
     $content = "User-agent: *\n";
@@ -45,6 +52,8 @@ Route::get('/sitemap.xml', function () {
         ['loc' => "{$base}/exchange", 'priority' => '1.0'],
         ['loc' => "{$base}/lotaya-shwe-oh-withdraw", 'priority' => '0.95'],
         ['loc' => "{$base}/exchange/status", 'priority' => '0.7'],
+        ['loc' => "{$base}/privacy", 'priority' => '0.8'],
+        ['loc' => "{$base}/account-deletion", 'priority' => '0.6'],
     ];
 
     $xml = '<?xml version="1.0" encoding="UTF-8"?>';

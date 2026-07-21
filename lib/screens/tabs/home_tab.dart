@@ -95,7 +95,7 @@ class _HomeTabState extends State<HomeTab> {
                         ),
                       ),
                       Text(
-                        'Stay updated & earn rewards!',
+                        'Stay updated & collect points!',
                         style: TextStyle(
                           color: AppColors.primary.withValues(alpha: 0.8),
                           fontSize: 13,
