@@ -13,12 +13,12 @@
     <p class="lead">Effective date: July 21, 2026</p>
     <p>
         The official Privacy Policy for U5AI Digital and Lotaya Shwe Oh is published at
-        <a href="https://u5aidigital.com/privacy-policy.html" rel="noopener">https://u5aidigital.com/privacy-policy.html</a>.
+        <a href="https://u5aidigital.com/privacy-policy/index.html" rel="noopener">https://u5aidigital.com/privacy-policy/index.html</a>.
     </p>
     <p>
         Related documents:
-        <a href="https://u5aidigital.com/terms-of-use.html" rel="noopener">Terms of Use</a> ·
-        <a href="https://u5aidigital.com/content-policy.html" rel="noopener">Content Policy</a>
+        <a href="https://u5aidigital.com/terms-of-use/index.html" rel="noopener">Terms of Use</a> ·
+        <a href="https://u5aidigital.com/content-policy/index.html" rel="noopener">Content Policy</a>
     </p>
     <p class="lead" style="margin-top:1rem;">Summary</p>
     <p>This page is a short mirror for app users. Lotaya Shwe Oh is a learning and engagement app operated by U5AI Digital. Points are virtual learning units — not cash. The mobile app does not provide cash withdrawal.</p>

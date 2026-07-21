@@ -547,9 +547,11 @@ class _AboutScreen extends StatelessWidget {
 class _PrivacyScreen extends StatelessWidget {
   const _PrivacyScreen();
 
-  static final Uri _website = Uri.parse('https://u5aidigital.com');
+  static final Uri _website = Uri.parse(ApiConfig.officialWebsiteUrl);
   static final Uri _telegram = Uri.parse('https://t.me/lotayashweoh');
   static final Uri _fullPolicy = Uri.parse(ApiConfig.privacyPolicyUrl);
+  static final Uri _terms = Uri.parse(ApiConfig.termsOfUseUrl);
+  static final Uri _contentPolicy = Uri.parse(ApiConfig.contentPolicyUrl);
   static final Uri _deleteWeb = Uri.parse(ApiConfig.accountDeletionUrl);
 
   Future<void> _openUrl(BuildContext context, Uri url, String label) async {
@@ -604,7 +606,18 @@ class _PrivacyScreen extends StatelessWidget {
                   onPressed: () =>
                       _openUrl(context, _fullPolicy, 'Privacy Policy'),
                   icon: const Icon(Icons.privacy_tip_outlined),
-                  label: const Text('Open full Privacy Policy'),
+                  label: const Text('Privacy Policy'),
+                ),
+                TextButton.icon(
+                  onPressed: () => _openUrl(context, _terms, 'Terms of Use'),
+                  icon: const Icon(Icons.description_outlined),
+                  label: const Text('Terms of Use'),
+                ),
+                TextButton.icon(
+                  onPressed: () =>
+                      _openUrl(context, _contentPolicy, 'Content Policy'),
+                  icon: const Icon(Icons.policy_outlined),
+                  label: const Text('Content Policy'),
                 ),
                 TextButton.icon(
                   onPressed: () =>

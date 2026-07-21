@@ -25,13 +25,13 @@ class ApiConfig {
   static const String officialWebsiteUrl = 'https://u5aidigital.com';
 
   static const String privacyPolicyUrl =
-      'https://u5aidigital.com/privacy-policy.html';
+      'https://u5aidigital.com/privacy-policy/index.html';
 
   static const String termsOfUseUrl =
-      'https://u5aidigital.com/terms-of-use.html';
+      'https://u5aidigital.com/terms-of-use/index.html';
 
   static const String contentPolicyUrl =
-      'https://u5aidigital.com/content-policy.html';
+      'https://u5aidigital.com/content-policy/index.html';
 
   static String get accountDeletionUrl =>
       '${baseUrl.replaceAll(RegExp(r'/+$'), '')}/account-deletion';
