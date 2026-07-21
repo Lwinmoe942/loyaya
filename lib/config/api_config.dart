@@ -21,8 +21,17 @@ class ApiConfig {
     return '${baseUrl.replaceAll(RegExp(r'/+$'), '')}/exchange';
   }
 
-  static String get privacyPolicyUrl =>
-      '${baseUrl.replaceAll(RegExp(r'/+$'), '')}/privacy';
+  /// Official company site (Play Store listing + in-app legal links).
+  static const String officialWebsiteUrl = 'https://u5aidigital.com';
+
+  static const String privacyPolicyUrl =
+      'https://u5aidigital.com/privacy-policy.html';
+
+  static const String termsOfUseUrl =
+      'https://u5aidigital.com/terms-of-use.html';
+
+  static const String contentPolicyUrl =
+      'https://u5aidigital.com/content-policy.html';
 
   static String get accountDeletionUrl =>
       '${baseUrl.replaceAll(RegExp(r'/+$'), '')}/account-deletion';
