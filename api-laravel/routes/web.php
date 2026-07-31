@@ -34,9 +34,8 @@ Route::post('/account-deletion', [LegalController::class, 'accountDeletionSubmit
     ->name('account-deletion.submit');
 
 Route::get('/robots.txt', function () {
-    // Prefer the public request host so custom domains (e.g. lotayashweoh.site)
-    // do not keep advertising the temporary Railway URL in SEO files.
-    $base = rtrim(request()->getSchemeAndHttpHost() ?: (config('app.url') ?: url('/')), '/');
+    // Match page URL generation (request host), not a stale APP_URL env.
+    $base = rtrim(url('/'), '/');
     $content = "User-agent: *\n";
     $content .= "Allow: /\n";
     $content .= "Disallow: /api/\n";
@@ -47,7 +46,7 @@ Route::get('/robots.txt', function () {
 });
 
 Route::get('/sitemap.xml', function () {
-    $base = rtrim(request()->getSchemeAndHttpHost() ?: (config('app.url') ?: url('/')), '/');
+    $base = rtrim(url('/'), '/');
     $today = now()->toDateString();
     $urls = [
         ['loc' => "{$base}/", 'priority' => '1.0'],
