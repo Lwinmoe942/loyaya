@@ -34,8 +34,7 @@ Route::post('/account-deletion', [LegalController::class, 'accountDeletionSubmit
     ->name('account-deletion.submit');
 
 Route::get('/robots.txt', function () {
-    // Match page URL generation (request host), not a stale APP_URL env.
-    $base = rtrim(url('/'), '/');
+    $base = rtrim((string) (config('app.url') ?: url('/')), '/');
     $content = "User-agent: *\n";
     $content .= "Allow: /\n";
     $content .= "Disallow: /api/\n";
@@ -46,7 +45,7 @@ Route::get('/robots.txt', function () {
 });
 
 Route::get('/sitemap.xml', function () {
-    $base = rtrim(url('/'), '/');
+    $base = rtrim((string) (config('app.url') ?: url('/')), '/');
     $today = now()->toDateString();
     $urls = [
         ['loc' => "{$base}/", 'priority' => '1.0'],
