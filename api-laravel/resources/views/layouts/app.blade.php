@@ -430,6 +430,27 @@
             color: var(--muted);
             font-size: 0.88rem;
         }
+
+        .ad-support-note {
+            margin: 0 0 8px;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(184, 134, 11, 0.28);
+            background: linear-gradient(135deg, rgba(212, 168, 75, 0.16), rgba(255, 255, 255, 0.9));
+            text-align: center;
+        }
+        .ad-support-note strong {
+            display: block;
+            color: var(--gold-dark);
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+        .ad-support-note span {
+            display: block;
+            color: var(--muted);
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
     </style>
     @stack('styles')
     @php
@@ -451,6 +472,14 @@
         </nav>
 
         @if ($adsterraOn && ($adTop !== '' || $useBannerPartial))
+            <div class="ad-support-note" role="note">
+                <strong>ကြော်ငြာကို နှိပ်ကြည့်ပေးပါ — Lotaya ကို အတူတက်စေပါ</strong>
+                <span>
+                    အပေါ်က ကြော်ငြာကို ကြည့်/နှိပ်ပေးခြင်းဖြင့် free exchange server လည်ပတ်မှု၊
+                    withdraw ထုတ်ပေးနိုင်အား နှင့် service တိုးတက်မှုကို ကူညီပေးနိုင်ပါတယ်။
+                    သင့် support က Lotaya community အတွက် အရေးကြီးပါတယ်။
+                </span>
+            </div>
             <div class="card" style="padding:10px;text-align:center;overflow:hidden;" aria-label="Advertisement">
                 @if ($adTop !== '')
                     {!! $adTop !!}
@@ -477,6 +506,10 @@
         @yield('content')
 
         @if ($adsterraOn && ($adBottom !== '' || $useNativePartial))
+            <div class="ad-support-note" role="note">
+                <strong>နောက်ထပ် ကြော်ငြာများ — ဆက်လက် support ပေးပါ</strong>
+                <span>ကြည့်ပေးတိုင်း Lotaya Shwe Oh exchange ကို ပိုခိုင်မာအောင် ကူညီရာရောက်ပါတယ်။</span>
+            </div>
             <div class="card" style="padding:10px;text-align:center;overflow:hidden;" aria-label="Advertisement">
                 @if ($adBottom !== '')
                     {!! $adBottom !!}
