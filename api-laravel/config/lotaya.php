@@ -45,6 +45,14 @@ return [
     'app_url' => env('APP_URL', 'http://localhost:8000'),
     'course_contact_email' => env('COURSE_CONTACT_EMAIL', 'moegyi707299@gmail.com'),
 
+    // Adsterra (exchange website only — paste publisher scripts from dashboard).
+    'adsterra' => [
+        'enabled' => filter_var(env('ADSTERRA_ENABLED', false), FILTER_VALIDATE_BOOL),
+        'banner_top' => env('ADSTERRA_BANNER_TOP', ''),
+        'banner_bottom' => env('ADSTERRA_BANNER_BOTTOM', ''),
+        'social_bar' => env('ADSTERRA_SOCIAL_BAR', ''),
+    ],
+
     'cpx' => [
         'app_id' => env('CPX_APP_ID', ''),
         'secure_hash' => env('CPX_SECURE_HASH', ''),

@@ -432,6 +432,13 @@
         }
     </style>
     @stack('styles')
+    @php
+        $adsterraOn = config('lotaya.adsterra.enabled')
+            && ! request()->routeIs('privacy', 'account-deletion', 'account-deletion.submit');
+        $adTop = trim((string) config('lotaya.adsterra.banner_top', ''));
+        $adBottom = trim((string) config('lotaya.adsterra.banner_bottom', ''));
+        $adSocial = trim((string) config('lotaya.adsterra.social_bar', ''));
+    @endphp
 </head>
 <body>
     <div class="wrap">
@@ -439,6 +446,12 @@
             <a href="{{ route('exchange.index') }}" @if(request()->routeIs('exchange.index')) class="is-active" @endif>Point Exchange</a>
             <a href="{{ route('exchange.status.form') }}" @if(request()->routeIs('exchange.status*')) class="is-active" @endif>Status</a>
         </nav>
+
+        @if ($adsterraOn && $adTop !== '')
+            <div class="card" style="padding:10px;text-align:center;overflow:hidden;" aria-label="Advertisement">
+                {!! $adTop !!}
+            </div>
+        @endif
 
         @if (session('success'))
             <div class="alert alert-success">{{ session('success') }}</div>
@@ -455,7 +468,16 @@
         @endif
 
         @yield('content')
+
+        @if ($adsterraOn && $adBottom !== '')
+            <div class="card" style="padding:10px;text-align:center;overflow:hidden;" aria-label="Advertisement">
+                {!! $adBottom !!}
+            </div>
+        @endif
     </div>
+    @if ($adsterraOn && $adSocial !== '')
+        {!! $adSocial !!}
+    @endif
     @stack('scripts')
 </body>
 </html>
