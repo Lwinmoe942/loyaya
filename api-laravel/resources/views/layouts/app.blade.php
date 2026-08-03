@@ -438,6 +438,9 @@
         $adTop = trim((string) config('lotaya.adsterra.banner_top', ''));
         $adBottom = trim((string) config('lotaya.adsterra.banner_bottom', ''));
         $adSocial = trim((string) config('lotaya.adsterra.social_bar', ''));
+        // Env HTML optional; otherwise use publisher partials committed for lotayashweoh.site.
+        $useBannerPartial = $adsterraOn && $adTop === '';
+        $useNativePartial = $adsterraOn && $adBottom === '';
     @endphp
 </head>
 <body>
@@ -447,9 +450,13 @@
             <a href="{{ route('exchange.status.form') }}" @if(request()->routeIs('exchange.status*')) class="is-active" @endif>Status</a>
         </nav>
 
-        @if ($adsterraOn && $adTop !== '')
+        @if ($adsterraOn && ($adTop !== '' || $useBannerPartial))
             <div class="card" style="padding:10px;text-align:center;overflow:hidden;" aria-label="Advertisement">
-                {!! $adTop !!}
+                @if ($adTop !== '')
+                    {!! $adTop !!}
+                @else
+                    @include('partials.adsterra-banner')
+                @endif
             </div>
         @endif
 
@@ -469,9 +476,13 @@
 
         @yield('content')
 
-        @if ($adsterraOn && $adBottom !== '')
+        @if ($adsterraOn && ($adBottom !== '' || $useNativePartial))
             <div class="card" style="padding:10px;text-align:center;overflow:hidden;" aria-label="Advertisement">
-                {!! $adBottom !!}
+                @if ($adBottom !== '')
+                    {!! $adBottom !!}
+                @else
+                    @include('partials.adsterra-native')
+                @endif
             </div>
         @endif
     </div>
