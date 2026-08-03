@@ -39,6 +39,14 @@ class ReferralService
             ->where('referred_by_user_id', $user->id)
             ->count();
 
+        // Pay any missing signup bonuses when the referrer opens status.
+        if ($referralCount > 0) {
+            User::query()
+                ->where('referred_by_user_id', $user->id)
+                ->orderBy('id')
+                ->each(fn (User $referred) => $this->awardSignupBonus($referred));
+        }
+
         $bonusEarned = (int) PointTransaction::query()
             ->where('user_id', $user->id)
             ->where('type', 'referral_bonus')
@@ -51,6 +59,8 @@ class ReferralService
             'applied_code' => $referredBy,
             'referral_count' => $referralCount,
             'referral_bonus_earned' => $bonusEarned,
+            'referral_signup_bonus' => (int) config('lotaya.referral_signup_bonus', 10),
+            'referral_earn_percent' => (float) config('lotaya.referral_earn_percent', 10),
         ];
     }
 
@@ -75,6 +85,7 @@ class ReferralService
         }
 
         $user->update(['referred_by_user_id' => $referrer->id]);
+        $this->awardSignupBonus($user->fresh());
     }
 
     public function linkOnRegister(User $user, ?string $code): void
@@ -92,6 +103,33 @@ class ReferralService
         }
     }
 
+    /**
+     * One-time flat bonus when a referred user is successfully linked.
+     * Idempotent — safe to call again for already-linked accounts.
+     */
+    public function awardSignupBonus(User $referred): void
+    {
+        if (! $referred->referred_by_user_id) {
+            return;
+        }
+
+        $bonus = (int) config('lotaya.referral_signup_bonus', 10);
+        if ($bonus < 1) {
+            return;
+        }
+
+        $referrerId = (int) $referred->referred_by_user_id;
+        $key = "referral_signup_{$referrerId}_{$referred->id}";
+
+        app(PointService::class)->addTransaction(
+            $referrerId,
+            $bonus,
+            'referral_bonus',
+            (string) $referred->id,
+            $key,
+        );
+    }
+
     public function rewardReferrer(int $earnerUserId, int $earnedPoints, string $sourceKey): void
     {
         if ($earnedPoints <= 0) {
@@ -103,9 +141,14 @@ class ReferralService
             return;
         }
 
-        $bonus = (int) floor($earnedPoints * 0.10);
+        // Backfill signup bonus for referrals linked before this feature shipped.
+        $this->awardSignupBonus($earner);
+
+        $percent = (float) config('lotaya.referral_earn_percent', 10);
+        $bonus = (int) floor($earnedPoints * ($percent / 100));
+        // Small earns (1–9 pts) used to yield 0; always pay at least 1 when friend earns.
         if ($bonus < 1) {
-            return;
+            $bonus = 1;
         }
 
         $referrerId = (int) $earner->referred_by_user_id;

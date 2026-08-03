@@ -19,7 +19,7 @@
         @if($ref)
             <div class="code">{{ strtoupper($ref) }}</div>
         @endif
-        <p>Earn points together — your friend gets 10% bonus when you earn in the app.</p>
+        <p>Earn together — your friend gets +10 points when you join with their code, plus 10% of what you earn in the app.</p>
     </div>
 </body>
 </html>

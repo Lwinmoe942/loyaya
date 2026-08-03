@@ -36,6 +36,11 @@ return [
         'watch_video_bonus' => ['points' => 1, 'daily' => false],
     ],
 
+    // Flat bonus to referrer when a friend successfully links a referral code.
+    'referral_signup_bonus' => (int) env('REFERRAL_SIGNUP_BONUS', 10),
+    // Percent of each referred friend's earn_* points paid to the referrer (min 1 when earn > 0).
+    'referral_earn_percent' => (float) env('REFERRAL_EARN_PERCENT', 10),
+
     'exchange_url' => env('EXCHANGE_URL', 'http://localhost:8000/exchange'),
     'app_url' => env('APP_URL', 'http://localhost:8000'),
     'course_contact_email' => env('COURSE_CONTACT_EMAIL', 'moegyi707299@gmail.com'),
