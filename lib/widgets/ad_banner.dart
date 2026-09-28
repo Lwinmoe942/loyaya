@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:loyaya/config/ad_config.dart';
 
-/// Banner ad placement. Skips Google sample unit IDs in production builds.
+/// Banner ad placement. Skips Google sample unit IDs with a production App ID.
 class AdBanner extends StatefulWidget {
   const AdBanner({super.key});
 
@@ -22,7 +22,6 @@ class _AdBannerState extends State<AdBanner> {
   }
 
   Future<void> _load() async {
-    // Do not ship Google sample banner IDs with a production App ID.
     if (AdConfig.bannerUnitId.contains('3940256099942544') &&
         !AdConfig.androidAppId.contains('3940256099942544')) {
       if (mounted) setState(() => _skipped = true);
@@ -35,9 +34,14 @@ class _AdBannerState extends State<AdBanner> {
       request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (ad) {
+          print('AdBanner loaded');
           if (mounted) setState(() => _loaded = true);
         },
         onAdFailedToLoad: (ad, error) {
+          print(
+            'AdBanner failed: code=${error.code} domain=${error.domain} '
+            'message=${error.message}',
+          );
           ad.dispose();
         },
       ),

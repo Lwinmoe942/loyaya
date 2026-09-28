@@ -75,8 +75,15 @@ class _SpinWheelScreenState extends State<SpinWheelScreen>
     final rewarded = await AdService.instance.showRewarded(
       onAdNotReady: () {
         if (mounted) {
+          final detail = AdService.instance.lastRewardedError;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Ad is loading. Please try again.')),
+            SnackBar(
+              content: Text(
+                detail == null || detail.isEmpty
+                    ? 'Ad is loading. Please try again.'
+                    : 'Ad failed: $detail',
+              ),
+            ),
           );
         }
       },

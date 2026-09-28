@@ -299,7 +299,7 @@ class ProfileTab extends StatelessWidget {
 class _TermsScreen extends StatelessWidget {
   const _TermsScreen();
 
-  static final Uri _website = Uri.parse('https://u5aidigital.com');
+  static final Uri _website = Uri.parse(ApiConfig.officialWebsiteUrl);
   static final Uri _telegram = Uri.parse('https://t.me/lotayashweoh');
 
   Future<void> _openUrl(BuildContext context, Uri url, String label) async {
@@ -433,7 +433,7 @@ class _TermsScreen extends StatelessWidget {
                   onPressed: () =>
                       _openUrl(context, _website, 'the website'),
                   icon: const Icon(Icons.language),
-                  label: const Text('https://u5aidigital.com'),
+                  label: Text(ApiConfig.officialWebsiteUrl),
                 ),
                 TextButton.icon(
                   onPressed: () =>
@@ -453,7 +453,7 @@ class _TermsScreen extends StatelessWidget {
 class _AboutScreen extends StatelessWidget {
   const _AboutScreen();
 
-  static final Uri _website = Uri.parse('https://u5aidigital.com');
+  static final Uri _website = Uri.parse(ApiConfig.officialWebsiteUrl);
   static final Uri _telegram = Uri.parse('https://t.me/lotayashweoh');
 
   Future<void> _openUrl(BuildContext context, Uri url, String label) async {
@@ -527,7 +527,7 @@ class _AboutScreen extends StatelessWidget {
                   onPressed: () =>
                       _openUrl(context, _website, 'the website'),
                   icon: const Icon(Icons.language),
-                  label: const Text('https://u5aidigital.com'),
+                  label: Text(ApiConfig.officialWebsiteUrl),
                 ),
                 TextButton.icon(
                   onPressed: () =>
@@ -629,7 +629,7 @@ class _PrivacyScreen extends StatelessWidget {
                   onPressed: () =>
                       _openUrl(context, _website, 'the website'),
                   icon: const Icon(Icons.language),
-                  label: const Text('https://u5aidigital.com'),
+                  label: Text(ApiConfig.officialWebsiteUrl),
                 ),
                 TextButton.icon(
                   onPressed: () =>

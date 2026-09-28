@@ -5,7 +5,9 @@ import 'package:loyaya/screens/watch_video_player_screen.dart';
 import 'package:loyaya/services/ad_service.dart';
 import 'package:loyaya/services/api_client.dart';
 import 'package:loyaya/theme/app_theme.dart';
+import 'package:loyaya/widgets/ad_banner.dart';
 import 'package:loyaya/widgets/dinga_page_header.dart';
+import 'package:loyaya/config/ad_config.dart';
 
 class WatchScreen extends StatefulWidget {
   const WatchScreen({super.key, required this.api});
@@ -130,7 +132,13 @@ class _WatchScreenState extends State<WatchScreen> {
       onAdNotReady: () {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Ad is loading. Please try again.')),
+            SnackBar(
+              content: Text(
+                AdConfig.hasRewardedUnit
+                    ? 'Ad is loading. Please try again.'
+                    : 'Rewarded ad unit is not set yet. Create it in AdMob first.',
+              ),
+            ),
           );
         }
       },
@@ -232,6 +240,13 @@ class _WatchScreenState extends State<WatchScreen> {
                             ),
                         ],
                       ),
+          ),
+          const SafeArea(
+            top: false,
+            child: ColoredBox(
+              color: Colors.white,
+              child: Center(child: AdBanner()),
+            ),
           ),
         ],
       ),

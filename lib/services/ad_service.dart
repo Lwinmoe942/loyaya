@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:loyaya/config/ad_config.dart';
 
@@ -12,6 +13,10 @@ class AdService {
   InterstitialAd? _interstitialAd;
   bool _loadingRewarded = false;
   bool _loadingInterstitial = false;
+  String? lastRewardedError;
+  String? lastInterstitialError;
+  bool get isRewardedReady => _rewardedAd != null;
+  bool get isInterstitialReady => _interstitialAd != null;
 
   Future<void> init() async {
     if (_initialized) return;
@@ -24,6 +29,7 @@ class AdService {
   }
 
   Future<void> _loadRewarded() async {
+    if (!AdConfig.hasRewardedUnit) return;
     if (_loadingRewarded) return;
     _loadingRewarded = true;
     final completer = Completer<void>();
@@ -33,11 +39,19 @@ class AdService {
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
+          print('AdService: Rewarded loaded (${AdConfig.rewardedUnitId})');
+          lastRewardedError = null;
           _rewardedAd = ad;
           _loadingRewarded = false;
           if (!completer.isCompleted) completer.complete();
         },
         onAdFailedToLoad: (error) {
+          lastRewardedError =
+              'code=${error.code} ${error.message}'.trim();
+          print(
+            'AdService: Rewarded FAILED code=${error.code} '
+            'domain=${error.domain} message=${error.message}',
+          );
           _rewardedAd = null;
           _loadingRewarded = false;
           if (!completer.isCompleted) completer.complete();
@@ -54,6 +68,7 @@ class AdService {
   }
 
   Future<void> _loadInterstitial() async {
+    if (!AdConfig.hasInterstitialUnit) return;
     if (_loadingInterstitial) return;
     _loadingInterstitial = true;
     final completer = Completer<void>();
@@ -63,11 +78,21 @@ class AdService {
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
+          print(
+            'AdService: Interstitial loaded (${AdConfig.interstitialUnitId})',
+          );
+          lastInterstitialError = null;
           _interstitialAd = ad;
           _loadingInterstitial = false;
           if (!completer.isCompleted) completer.complete();
         },
         onAdFailedToLoad: (error) {
+          lastInterstitialError =
+              'code=${error.code} ${error.message}'.trim();
+          print(
+            'AdService: Interstitial FAILED code=${error.code} '
+            'domain=${error.domain} message=${error.message}',
+          );
           _interstitialAd = null;
           _loadingInterstitial = false;
           if (!completer.isCompleted) completer.complete();
