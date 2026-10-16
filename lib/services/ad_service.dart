@@ -15,6 +15,7 @@ class AdService {
   bool _loadingInterstitial = false;
   String? lastRewardedError;
   String? lastInterstitialError;
+  bool lastShowHadAd = false;
   bool get isRewardedReady => _rewardedAd != null;
   bool get isInterstitialReady => _interstitialAd != null;
 
@@ -151,11 +152,10 @@ class AdService {
       await init();
     }
 
-    if (_rewardedAd == null) {
-      await _loadRewarded();
-    }
+    await _ensureRewardedReady();
 
     final ad = _rewardedAd;
+    lastShowHadAd = ad != null;
     if (ad == null) {
       onAdNotReady?.call();
       return false;
@@ -169,7 +169,10 @@ class AdService {
         dismissed.dispose();
         _rewardedAd = null;
         _loadRewarded();
-        if (!completer.isCompleted) completer.complete(rewarded);
+        // onUserEarnedReward can arrive slightly after dismiss on some devices.
+        Future<void>.delayed(const Duration(milliseconds: 800), () {
+          if (!completer.isCompleted) completer.complete(rewarded);
+        });
       },
       onAdFailedToShowFullScreenContent: (failed, error) {
         failed.dispose();
@@ -185,7 +188,10 @@ class AdService {
       },
     );
 
-    return completer.future;
+    return completer.future.timeout(
+      const Duration(seconds: 120),
+      onTimeout: () => rewarded,
+    );
   }
 
   Future<bool> showRewardedMultiple(
@@ -195,10 +201,22 @@ class AdService {
   }) async {
     for (var i = 0; i < count; i++) {
       onProgress?.call(i + 1, count);
+      if (i > 0) {
+        await _ensureRewardedReady();
+      }
       final rewarded = await showRewarded(onAdNotReady: onAdNotReady);
       if (!rewarded) return false;
     }
     return true;
+  }
+
+  Future<void> _ensureRewardedReady() async {
+    for (var i = 0; i < 8; i++) {
+      if (_rewardedAd != null) return;
+      await _loadRewarded();
+      if (_rewardedAd != null) return;
+      await Future<void>.delayed(const Duration(milliseconds: 700));
+    }
   }
 
   void dispose() {

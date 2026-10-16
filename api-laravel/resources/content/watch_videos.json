@@ -1,18 +1,902 @@
-[
-  {
-    "id": "watch_start",
-    "title": "Getting Started Video",
-    "points": 1,
-    "bonus_points": 1,
-    "watch_seconds": 20,
-    "video_url": "https://www.youtube.com/watch?v=M7lc1UVf-VE"
-  },
-  {
-    "id": "watch_earn",
-    "title": "Earn Points Tutorial",
-    "points": 1,
-    "bonus_points": 1,
-    "watch_seconds": 20,
-    "video_url": "https://www.youtube.com/watch?v=M7lc1UVf-VE"
-  }
+﻿[
+    {
+        "id":  "watch_5s_1",
+        "title":  "Quick Watch 1",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+    },
+    {
+        "id":  "watch_5s_2",
+        "title":  "Quick Watch 2",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+    },
+    {
+        "id":  "watch_5s_3",
+        "title":  "Quick Watch 3",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+    },
+    {
+        "id":  "watch_5s_4",
+        "title":  "Quick Watch 4",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+    },
+    {
+        "id":  "watch_5s_5",
+        "title":  "Quick Watch 5",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
+    },
+    {
+        "id":  "watch_5s_6",
+        "title":  "Quick Watch 6",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+    },
+    {
+        "id":  "watch_5s_7",
+        "title":  "Quick Watch 7",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+    },
+    {
+        "id":  "watch_5s_8",
+        "title":  "Quick Watch 8",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4"
+    },
+    {
+        "id":  "watch_5s_9",
+        "title":  "Quick Watch 9",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+    },
+    {
+        "id":  "watch_5s_10",
+        "title":  "Quick Watch 10",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4"
+    },
+    {
+        "id":  "watch_5s_11",
+        "title":  "Quick Watch 11",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+    },
+    {
+        "id":  "watch_5s_12",
+        "title":  "Quick Watch 12",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+    },
+    {
+        "id":  "watch_5s_13",
+        "title":  "Quick Watch 13",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+    },
+    {
+        "id":  "watch_5s_14",
+        "title":  "Quick Watch 14",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+    },
+    {
+        "id":  "watch_5s_15",
+        "title":  "Quick Watch 15",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
+    },
+    {
+        "id":  "watch_5s_16",
+        "title":  "Quick Watch 16",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+    },
+    {
+        "id":  "watch_5s_17",
+        "title":  "Quick Watch 17",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+    },
+    {
+        "id":  "watch_5s_18",
+        "title":  "Quick Watch 18",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4"
+    },
+    {
+        "id":  "watch_5s_19",
+        "title":  "Quick Watch 19",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+    },
+    {
+        "id":  "watch_5s_20",
+        "title":  "Quick Watch 20",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4"
+    },
+    {
+        "id":  "watch_5s_21",
+        "title":  "Quick Watch 21",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+    },
+    {
+        "id":  "watch_5s_22",
+        "title":  "Quick Watch 22",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+    },
+    {
+        "id":  "watch_5s_23",
+        "title":  "Quick Watch 23",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+    },
+    {
+        "id":  "watch_5s_24",
+        "title":  "Quick Watch 24",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+    },
+    {
+        "id":  "watch_5s_25",
+        "title":  "Quick Watch 25",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
+    },
+    {
+        "id":  "watch_5s_26",
+        "title":  "Quick Watch 26",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+    },
+    {
+        "id":  "watch_5s_27",
+        "title":  "Quick Watch 27",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+    },
+    {
+        "id":  "watch_5s_28",
+        "title":  "Quick Watch 28",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4"
+    },
+    {
+        "id":  "watch_5s_29",
+        "title":  "Quick Watch 29",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+    },
+    {
+        "id":  "watch_5s_30",
+        "title":  "Quick Watch 30",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4"
+    },
+    {
+        "id":  "watch_5s_31",
+        "title":  "Quick Watch 31",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+    },
+    {
+        "id":  "watch_5s_32",
+        "title":  "Quick Watch 32",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+    },
+    {
+        "id":  "watch_5s_33",
+        "title":  "Quick Watch 33",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+    },
+    {
+        "id":  "watch_5s_34",
+        "title":  "Quick Watch 34",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+    },
+    {
+        "id":  "watch_5s_35",
+        "title":  "Quick Watch 35",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
+    },
+    {
+        "id":  "watch_5s_36",
+        "title":  "Quick Watch 36",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+    },
+    {
+        "id":  "watch_5s_37",
+        "title":  "Quick Watch 37",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+    },
+    {
+        "id":  "watch_5s_38",
+        "title":  "Quick Watch 38",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4"
+    },
+    {
+        "id":  "watch_5s_39",
+        "title":  "Quick Watch 39",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+    },
+    {
+        "id":  "watch_5s_40",
+        "title":  "Quick Watch 40",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4"
+    },
+    {
+        "id":  "watch_5s_41",
+        "title":  "Quick Watch 41",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+    },
+    {
+        "id":  "watch_5s_42",
+        "title":  "Quick Watch 42",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+    },
+    {
+        "id":  "watch_5s_43",
+        "title":  "Quick Watch 43",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+    },
+    {
+        "id":  "watch_5s_44",
+        "title":  "Quick Watch 44",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+    },
+    {
+        "id":  "watch_5s_45",
+        "title":  "Quick Watch 45",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
+    },
+    {
+        "id":  "watch_5s_46",
+        "title":  "Quick Watch 46",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+    },
+    {
+        "id":  "watch_5s_47",
+        "title":  "Quick Watch 47",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+    },
+    {
+        "id":  "watch_5s_48",
+        "title":  "Quick Watch 48",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4"
+    },
+    {
+        "id":  "watch_5s_49",
+        "title":  "Quick Watch 49",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+    },
+    {
+        "id":  "watch_5s_50",
+        "title":  "Quick Watch 50",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4"
+    },
+    {
+        "id":  "watch_5s_51",
+        "title":  "Quick Watch 51",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+    },
+    {
+        "id":  "watch_5s_52",
+        "title":  "Quick Watch 52",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+    },
+    {
+        "id":  "watch_5s_53",
+        "title":  "Quick Watch 53",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+    },
+    {
+        "id":  "watch_5s_54",
+        "title":  "Quick Watch 54",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+    },
+    {
+        "id":  "watch_5s_55",
+        "title":  "Quick Watch 55",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
+    },
+    {
+        "id":  "watch_5s_56",
+        "title":  "Quick Watch 56",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+    },
+    {
+        "id":  "watch_5s_57",
+        "title":  "Quick Watch 57",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+    },
+    {
+        "id":  "watch_5s_58",
+        "title":  "Quick Watch 58",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4"
+    },
+    {
+        "id":  "watch_5s_59",
+        "title":  "Quick Watch 59",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+    },
+    {
+        "id":  "watch_5s_60",
+        "title":  "Quick Watch 60",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4"
+    },
+    {
+        "id":  "watch_5s_61",
+        "title":  "Quick Watch 61",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+    },
+    {
+        "id":  "watch_5s_62",
+        "title":  "Quick Watch 62",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+    },
+    {
+        "id":  "watch_5s_63",
+        "title":  "Quick Watch 63",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+    },
+    {
+        "id":  "watch_5s_64",
+        "title":  "Quick Watch 64",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+    },
+    {
+        "id":  "watch_5s_65",
+        "title":  "Quick Watch 65",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
+    },
+    {
+        "id":  "watch_5s_66",
+        "title":  "Quick Watch 66",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+    },
+    {
+        "id":  "watch_5s_67",
+        "title":  "Quick Watch 67",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+    },
+    {
+        "id":  "watch_5s_68",
+        "title":  "Quick Watch 68",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4"
+    },
+    {
+        "id":  "watch_5s_69",
+        "title":  "Quick Watch 69",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+    },
+    {
+        "id":  "watch_5s_70",
+        "title":  "Quick Watch 70",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4"
+    },
+    {
+        "id":  "watch_5s_71",
+        "title":  "Quick Watch 71",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+    },
+    {
+        "id":  "watch_5s_72",
+        "title":  "Quick Watch 72",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+    },
+    {
+        "id":  "watch_5s_73",
+        "title":  "Quick Watch 73",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+    },
+    {
+        "id":  "watch_5s_74",
+        "title":  "Quick Watch 74",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+    },
+    {
+        "id":  "watch_5s_75",
+        "title":  "Quick Watch 75",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
+    },
+    {
+        "id":  "watch_5s_76",
+        "title":  "Quick Watch 76",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+    },
+    {
+        "id":  "watch_5s_77",
+        "title":  "Quick Watch 77",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+    },
+    {
+        "id":  "watch_5s_78",
+        "title":  "Quick Watch 78",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4"
+    },
+    {
+        "id":  "watch_5s_79",
+        "title":  "Quick Watch 79",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+    },
+    {
+        "id":  "watch_5s_80",
+        "title":  "Quick Watch 80",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4"
+    },
+    {
+        "id":  "watch_5s_81",
+        "title":  "Quick Watch 81",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+    },
+    {
+        "id":  "watch_5s_82",
+        "title":  "Quick Watch 82",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+    },
+    {
+        "id":  "watch_5s_83",
+        "title":  "Quick Watch 83",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+    },
+    {
+        "id":  "watch_5s_84",
+        "title":  "Quick Watch 84",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+    },
+    {
+        "id":  "watch_5s_85",
+        "title":  "Quick Watch 85",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
+    },
+    {
+        "id":  "watch_5s_86",
+        "title":  "Quick Watch 86",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+    },
+    {
+        "id":  "watch_5s_87",
+        "title":  "Quick Watch 87",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+    },
+    {
+        "id":  "watch_5s_88",
+        "title":  "Quick Watch 88",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4"
+    },
+    {
+        "id":  "watch_5s_89",
+        "title":  "Quick Watch 89",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+    },
+    {
+        "id":  "watch_5s_90",
+        "title":  "Quick Watch 90",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4"
+    },
+    {
+        "id":  "watch_5s_91",
+        "title":  "Quick Watch 91",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+    },
+    {
+        "id":  "watch_5s_92",
+        "title":  "Quick Watch 92",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+    },
+    {
+        "id":  "watch_5s_93",
+        "title":  "Quick Watch 93",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+    },
+    {
+        "id":  "watch_5s_94",
+        "title":  "Quick Watch 94",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+    },
+    {
+        "id":  "watch_5s_95",
+        "title":  "Quick Watch 95",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
+    },
+    {
+        "id":  "watch_5s_96",
+        "title":  "Quick Watch 96",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+    },
+    {
+        "id":  "watch_5s_97",
+        "title":  "Quick Watch 97",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+    },
+    {
+        "id":  "watch_5s_98",
+        "title":  "Quick Watch 98",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4"
+    },
+    {
+        "id":  "watch_5s_99",
+        "title":  "Quick Watch 99",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+    },
+    {
+        "id":  "watch_5s_100",
+        "title":  "Quick Watch 100",
+        "points":  1,
+        "bonus_points":  2,
+        "bonus_ads":  3,
+        "watch_seconds":  5,
+        "video_url":  "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4"
+    }
 ]

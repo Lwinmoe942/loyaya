@@ -133,7 +133,7 @@ class GameService
 
         $result = $this->points->addTransaction(
             $userId,
-            1,
+            2,
             'earn_tic_tac_toe_bonus',
             $matchId,
             $key,
@@ -144,7 +144,7 @@ class GameService
         }
 
         return [
-            'points' => 1,
+            'points' => 2,
             'balance' => $result['balance'],
             'duplicate' => false,
         ];

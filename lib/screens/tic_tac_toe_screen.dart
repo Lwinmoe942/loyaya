@@ -41,6 +41,7 @@ class TicTacToeScreen extends StatefulWidget {
 class _TicTacToeScreenState extends State<TicTacToeScreen> {
   static const _lossCooldownSeconds = 60;
   static const _bonusAdCount = 3;
+  static const _bonusPoints = 2;
 
   final _random = Random();
   late String _matchId;
@@ -54,6 +55,7 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
   bool _gameOver = false;
   bool _claiming = false;
   bool _winClaimed = false;
+  bool _bonusClaimed = false;
   String? _status;
 
   bool get _locked => _waitSeconds > 0;
@@ -121,6 +123,7 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
       _userTurn = true;
       _gameOver = false;
       _winClaimed = false;
+      _bonusClaimed = false;
       _status = null;
     });
   }
@@ -343,9 +346,9 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Bonus +1'),
+        title: const Text('Bonus +2'),
         content: const Text(
-          'Watch 3 reward ads to claim bonus +1 point?\n\n'
+          'Watch 3 reward ads to claim bonus +2 points?\n\n'
           'If you skip, you can play again right away.',
         ),
         actions: [
@@ -397,9 +400,10 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
     if (!rewarded) {
       setState(() {
         _claiming = false;
-        _status = 'Bonus cancelled. You can play again.';
+        _status = AdService.instance.lastShowHadAd
+            ? 'Watch all 3 ads until the end to earn bonus +$_bonusPoints.'
+            : 'Ad is loading. Tap Claim bonus and try again.';
       });
-      _resetBoard();
       return;
     }
 
@@ -408,7 +412,8 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
       if (mounted) {
         setState(() {
           _claiming = false;
-          _status = 'Bonus +1 point claimed!';
+          _bonusClaimed = true;
+          _status = 'Bonus +$_bonusPoints points claimed!';
         });
         await Future<void>.delayed(const Duration(seconds: 1));
         if (mounted) _resetBoard();
@@ -419,7 +424,6 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
           _claiming = false;
           _status = apiErrorMessage(e.error);
         });
-        _resetBoard();
       }
     }
   }
@@ -451,7 +455,7 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
                       const Expanded(
                         child: Text(
                           'Easy +1, Hard +2, Super Hard +3. '
-                          'Watch rewarded ads for extra bonus. '
+                          'Watch 3 reward ads after a win for bonus +2. '
                           'If you lose, wait 60 seconds to play again.',
                           style: TextStyle(
                             color: AppColors.textSecondary,
@@ -574,6 +578,26 @@ class _TicTacToeScreenState extends State<TicTacToeScreen> {
                     onPressed: null,
                     child: Text('${_waitSeconds}s'),
                   ),
+                )
+              else if (_winClaimed && !_bonusClaimed && !_claiming)
+                Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: _claimBonusWithAds,
+                        child: const Text('Watch 3 ads for +2 bonus'),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: _resetBoard,
+                        child: const Text('Play Again'),
+                      ),
+                    ),
+                  ],
                 )
               else if (_gameOver && !_winClaimed && !_claiming)
                 SizedBox(

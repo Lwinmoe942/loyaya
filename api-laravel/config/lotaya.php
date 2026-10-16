@@ -33,7 +33,7 @@ return [
         'math_quiz' => ['points' => 2, 'daily' => false],
         'survey' => ['points' => 2, 'daily' => false],
         'watch_video' => ['points' => 1, 'daily' => false],
-        'watch_video_bonus' => ['points' => 1, 'daily' => false],
+        'watch_video_bonus' => ['points' => 2, 'daily' => false],
     ],
 
     // Flat bonus to referrer when a friend successfully links a referral code.

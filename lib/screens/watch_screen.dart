@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:loyaya/data/watch_videos.dart';
 import 'package:loyaya/screens/watch_video_player_screen.dart';
 import 'package:loyaya/services/ad_service.dart';
 import 'package:loyaya/services/api_client.dart';
@@ -19,24 +20,6 @@ class WatchScreen extends StatefulWidget {
 }
 
 class _WatchScreenState extends State<WatchScreen> {
-  static const _fallbackVideos = [
-    {
-      'id': 'watch_start',
-      'title': 'Getting Started Video',
-      'points': 1,
-      'bonus_points': 1,
-      'watch_seconds': 20,
-      'video_url': 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
-    },
-    {
-      'id': 'watch_earn',
-      'title': 'Earn Points Tutorial',
-      'points': 1,
-      'bonus_points': 1,
-      'watch_seconds': 20,
-      'video_url': 'https://www.youtube.com/watch?v=M7lc1UVf-VE',
-    },
-  ];
 
   List<Map<String, dynamic>> _videos = [];
   bool _loading = true;
@@ -53,15 +36,9 @@ class _WatchScreenState extends State<WatchScreen> {
   Future<void> _load() async {
     if (mounted) setState(() => _loading = true);
 
-    var items = List<Map<String, dynamic>>.from(_fallbackVideos);
-    try {
-      final loaded = await widget.api.watchVideos();
-      if (loaded.isNotEmpty) {
-        items = loaded;
-      }
-    } catch (_) {
-      // Keep fallback videos when catalog API is unreachable.
-    }
+    // Keep the local 5-second clips. Server catalog still has old
+    // YouTube embeds that fail with error 152-4 in Myanmar.
+    var items = watchFallbackVideos();
 
     final claimedBase = <String>{};
     final claimedBonus = <String>{};
@@ -128,7 +105,9 @@ class _WatchScreenState extends State<WatchScreen> {
 
     setState(() => _starting = true);
 
-    final rewarded = await AdService.instance.showRewarded(
+    final bonusAds = video['bonus_ads'] as int? ?? 3;
+    final rewarded = await AdService.instance.showRewardedMultiple(
+      bonusAds,
       onAdNotReady: () {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -147,20 +126,29 @@ class _WatchScreenState extends State<WatchScreen> {
     if (!mounted) return;
     if (!rewarded) {
       setState(() => _starting = false);
+      if (AdService.instance.lastShowHadAd) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Watch the reward ad until the end to earn bonus points.',
+            ),
+          ),
+        );
+      }
       return;
     }
 
     try {
       final result = await widget.api.earnWatchVideoBonus(id);
       if (!mounted) return;
-      final bonus = video['bonus_points'] as int? ?? 1;
+      final bonus = video['bonus_points'] as int? ?? 2;
       if (result['duplicate'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Bonus already claimed for this video.')),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Bonus +$bonus point earned!')),
+          SnackBar(content: Text('Bonus +$bonus points earned!')),
         );
       }
       await _load();
@@ -195,8 +183,8 @@ class _WatchScreenState extends State<WatchScreen> {
               child: DingaPageHeader(
                 title: 'Watch & Get Points',
                 subtitle:
-                    'Watch the video for at least 20 seconds to earn 1 point. '
-                    'Watch another ad for bonus +1.',
+                    'Watch the 5-second clip to earn 1 point. '
+                    'Watch 3 reward ads for bonus +2.',
                 onBack: () => Navigator.pop(
                   context,
                   _claimedBase.isNotEmpty || _claimedBonus.isNotEmpty,
@@ -223,8 +211,8 @@ class _WatchScreenState extends State<WatchScreen> {
                             _WatchCard(
                               title: video['title']?.toString() ?? '',
                               points: video['points'] as int? ?? 1,
-                              bonusPoints: video['bonus_points'] as int? ?? 1,
-                              watchSec: video['watch_seconds'] as int? ?? 20,
+                              bonusPoints: video['bonus_points'] as int? ?? 2,
+                              watchSec: video['watch_seconds'] as int? ?? 5,
                               thumbUrl: youtubeThumbUrl(
                                 video['video_url']?.toString(),
                               ),
@@ -295,17 +283,29 @@ class _WatchCard extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Image.network(
-                    thumbUrl,
-                    height: 160,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      height: 160,
-                      color: Colors.grey.shade300,
-                      child: const Icon(Icons.play_circle_fill, size: 48),
-                    ),
-                  ),
+                  thumbUrl.isEmpty
+                      ? Container(
+                          height: 160,
+                          width: double.infinity,
+                          color: const Color(0xFF2B2B2B),
+                          child: const Icon(
+                            Icons.play_circle_fill,
+                            size: 48,
+                            color: Colors.white70,
+                          ),
+                        )
+                      : Image.network(
+                          thumbUrl,
+                          height: 160,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                            height: 160,
+                            color: Colors.grey.shade300,
+                            child: const Icon(Icons.play_circle_fill, size: 48),
+                          ),
+                        ),
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.35),
@@ -352,7 +352,7 @@ class _WatchCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Bonus +$bonusPoints with another ad',
+              'Bonus +$bonusPoints with 3 reward ads',
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 12,
@@ -402,7 +402,7 @@ class _WatchCard extends StatelessWidget {
                           color: Colors.white,
                         ),
                       )
-                    : Text('Watch Ad for +$bonusPoints Bonus'),
+                    : Text('Watch 3 ads for +$bonusPoints bonus'),
               )
             else
               FilledButton(

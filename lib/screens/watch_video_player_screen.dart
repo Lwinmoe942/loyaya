@@ -33,7 +33,8 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
   String? _error;
 
   int get _basePoints => widget.video['points'] as int? ?? 1;
-  int get _bonusPoints => widget.video['bonus_points'] as int? ?? 1;
+  int get _bonusPoints => widget.video['bonus_points'] as int? ?? 2;
+  int get _bonusAds => widget.video['bonus_ads'] as int? ?? 3;
 
   String get _videoId {
     final url = widget.video['video_url']?.toString() ?? '';
@@ -43,7 +44,7 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
   @override
   void initState() {
     super.initState();
-    _minWatchSeconds = widget.video['watch_seconds'] as int? ?? 20;
+    _minWatchSeconds = widget.video['watch_seconds'] as int? ?? 5;
 
     late final PlatformWebViewControllerCreationParams params;
     if (WebViewPlatform.instance is AndroidWebViewPlatform) {
@@ -57,12 +58,14 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
       params = const PlatformWebViewControllerCreationParams();
     }
 
+    final videoUrl = widget.video['video_url']?.toString() ?? '';
+    final isDirect = isDirectVideoUrl(videoUrl);
     final controller = WebViewController.fromPlatformCreationParams(params)
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.black)
       ..loadHtmlString(
-        _youtubeEmbedHtml(_videoId),
-        baseUrl: 'https://www.youtube.com',
+        isDirect ? _directVideoHtml(videoUrl) : _youtubeEmbedHtml(_videoId),
+        baseUrl: isDirect ? videoUrl : 'https://www.youtube.com',
       );
 
     if (controller.platform is AndroidWebViewController) {
@@ -138,7 +141,7 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
       builder: (context) => AlertDialog(
         title: Text('Bonus +$_bonusPoints'),
         content: Text(
-          'Watch 1 reward ad to claim bonus +$_bonusPoints point?\n\n'
+          'Watch $_bonusAds reward ads to claim bonus +$_bonusPoints points?\n\n'
           'You can also claim the bonus later from the video list.',
         ),
         actions: [
@@ -148,7 +151,7 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Watch ad'),
+            child: const Text('Watch ads'),
           ),
         ],
       ),
@@ -164,7 +167,8 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
   }
 
   Future<void> _claimBonusWithAd() async {
-    final rewarded = await AdService.instance.showRewarded(
+    final rewarded = await AdService.instance.showRewardedMultiple(
+      _bonusAds,
       onAdNotReady: () {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -176,6 +180,15 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
 
     if (!mounted) return;
     if (!rewarded) {
+      if (AdService.instance.lastShowHadAd) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Watch the reward ad until the end to earn bonus points.',
+            ),
+          ),
+        );
+      }
       Navigator.pop(context, true);
       return;
     }
@@ -190,7 +203,7 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Bonus +$_bonusPoints point earned!')),
+          SnackBar(content: Text('Bonus +$_bonusPoints points earned!')),
         );
       }
     } on ApiException catch (e) {
@@ -285,6 +298,31 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
   }
 }
 
+bool isDirectVideoUrl(String url) {
+  final lower = url.toLowerCase();
+  return lower.endsWith('.mp4') ||
+      lower.endsWith('.webm') ||
+      lower.contains('.mp4?');
+}
+
+String _directVideoHtml(String url) {
+  return '''
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <style>
+    html, body { margin: 0; padding: 0; background: #000; height: 100%; overflow: hidden; }
+    video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+  </style>
+</head>
+<body>
+  <video autoplay playsinline controls src="$url"></video>
+</body>
+</html>
+''';
+}
+
 String _youtubeEmbedHtml(String videoId) {
   return '''
 <!DOCTYPE html>
@@ -328,6 +366,10 @@ String? youtubeIdFromUrl(String url) {
 }
 
 String youtubeThumbUrl(String? videoUrl) {
-  final id = youtubeIdFromUrl(videoUrl ?? '') ?? 'M7lc1UVf-VE';
+  final url = videoUrl ?? '';
+  if (isDirectVideoUrl(url)) {
+    return '';
+  }
+  final id = youtubeIdFromUrl(url) ?? 'M7lc1UVf-VE';
   return 'https://img.youtube.com/vi/$id/hqdefault.jpg';
 }

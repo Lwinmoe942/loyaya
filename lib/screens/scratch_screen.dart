@@ -109,6 +109,15 @@ class _ScratchScreenState extends State<ScratchScreen> with EntryAdMixin {
 
     if (!rewarded) {
       setState(() => _watchingAd = false);
+      if (AdService.instance.lastShowHadAd) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Watch the reward ad until the end to earn points.',
+            ),
+          ),
+        );
+      }
       return;
     }
 

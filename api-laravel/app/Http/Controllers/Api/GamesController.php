@@ -133,7 +133,7 @@ class GamesController extends Controller
         return response()->json([
             'points' => $result['points'],
             'balance' => $result['balance'],
-            'message' => 'Bonus +1 point claimed!',
+            'message' => 'Bonus +2 points claimed!',
         ]);
     }
 }
