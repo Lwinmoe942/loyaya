@@ -600,10 +600,12 @@ String apiErrorMessage(String error) {
     'OTP_LOCKED' => 'Too many wrong codes. Request a new one later.',
     'MAIL_NOT_CONFIGURED' =>
       'Password reset email is not set up on the server yet.',
+    'MAIL_API_REQUIRED' =>
+      'Same email is OK. Railway blocks Gmail SMTP — add BREVO_API_KEY to send OTP to every user.',
     'MAIL_AUTH_FAILED' =>
-      'Mail login failed. Use a Gmail App Password with no spaces.',
+      'Mail login failed. Check the API key and verified sender email.',
     'MAIL_CONNECTION_FAILED' =>
-      'Could not reach the mail server. Use port 465 (smtps) on Railway.',
+      'Same email is OK. Railway blocked Gmail SMTP. Add BREVO_API_KEY instead.',
     'MAIL_FAILED' => 'Could not send the code. Please try again later.',
     'VALIDATION_ERROR' => 'Please check your input and try again.',
     'API_NOT_FOUND_CHECK_URL' =>

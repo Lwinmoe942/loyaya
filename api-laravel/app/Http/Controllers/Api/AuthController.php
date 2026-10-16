@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Mail\PasswordResetOtpMail;
 use App\Models\User;
+use App\Services\OtpMailSender;
 use App\Services\PointService;
 use App\Services\UserPresenter;
 use App\Support\PublicId;
@@ -14,7 +14,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
@@ -22,6 +21,7 @@ class AuthController extends Controller
     public function __construct(
         private readonly PointService $points,
         private readonly UserPresenter $presenter,
+        private readonly OtpMailSender $otpMail,
     ) {}
 
     public function register(Request $request): JsonResponse
@@ -113,9 +113,13 @@ class AuthController extends Controller
             return response()->json(['error' => 'OTP_COOLDOWN'], 429);
         }
 
-        $mailer = (string) config('mail.default');
-        if (in_array($mailer, ['log', 'array'], true)) {
-            return response()->json(['error' => 'MAIL_NOT_CONFIGURED'], 503);
+        if (! $this->otpMail->hasHttpMailer()) {
+            $mailer = (string) config('mail.default');
+            if (in_array($mailer, ['log', 'array'], true)) {
+                return response()->json(['error' => 'MAIL_NOT_CONFIGURED'], 503);
+            }
+
+            return response()->json(['error' => 'MAIL_API_REQUIRED'], 503);
         }
 
         $user = User::query()->whereRaw('LOWER(email) = ?', [$email])->first();
@@ -128,7 +132,7 @@ class AuthController extends Controller
             Cache::put('otp_attempts:'.$email, 0, now()->addMinutes(15));
 
             try {
-                Mail::to($email)->send(new PasswordResetOtpMail($user->name, $otp));
+                $this->otpMail->send($email, $user->name, $otp);
             } catch (\Throwable $e) {
                 report($e);
 
