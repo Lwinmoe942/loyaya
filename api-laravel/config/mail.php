@@ -39,13 +39,17 @@ return [
 
         'smtp' => [
             'transport' => 'smtp',
-            'scheme' => env('MAIL_SCHEME'),
+            'scheme' => str_contains(strtolower((string) env('MAIL_HOST', '')), 'gmail')
+                ? 'smtps'
+                : env('MAIL_SCHEME'),
             'url' => env('MAIL_URL'),
             'host' => env('MAIL_HOST', '127.0.0.1'),
-            'port' => env('MAIL_PORT', 2525),
+            'port' => str_contains(strtolower((string) env('MAIL_HOST', '')), 'gmail')
+                ? 465
+                : env('MAIL_PORT', 2525),
             'username' => env('MAIL_USERNAME'),
-            'password' => env('MAIL_PASSWORD'),
-            'timeout' => null,
+            'password' => preg_replace('/\s+/', '', (string) env('MAIL_PASSWORD')),
+            'timeout' => 30,
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
@@ -111,7 +115,10 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+        'address' => env(
+            'MAIL_FROM_ADDRESS',
+            env('MAIL_USERNAME', 'hello@example.com'),
+        ),
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 

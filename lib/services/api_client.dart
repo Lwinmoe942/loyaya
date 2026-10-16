@@ -82,6 +82,36 @@ class ApiClient {
     });
   }
 
+  Future<Map<String, dynamic>> forgotPassword({required String email}) async {
+    return _withRetry(() async {
+      final res = await _post(
+        Uri.parse('${ApiConfig.baseUrl}/api/auth/forgot-password'),
+        headers: _headers,
+        body: jsonEncode({'email': email}),
+      );
+      return _parse(res);
+    });
+  }
+
+  Future<Map<String, dynamic>> resetPassword({
+    required String email,
+    required String otp,
+    required String password,
+  }) async {
+    return _withRetry(() async {
+      final res = await _post(
+        Uri.parse('${ApiConfig.baseUrl}/api/auth/reset-password'),
+        headers: _headers,
+        body: jsonEncode({
+          'email': email,
+          'otp': otp,
+          'password': password,
+        }),
+      );
+      return _parse(res);
+    });
+  }
+
   Future<Map<String, dynamic>> me() async {
     return _withRetry(() async {
       final res = await _get(
@@ -130,31 +160,67 @@ class ApiClient {
     String? idempotentKey,
     String? contentId,
   }) async {
-    final res = await _post(
-      Uri.parse('${ApiConfig.baseUrl}/api/points/earn'),
-      headers: _headers,
-      body: jsonEncode({
-        'action': action,
-        if (idempotentKey != null) 'idempotent_key': idempotentKey,
-        if (contentId != null) 'content_id': contentId,
-      }),
-    );
-    return _parse(res);
+    return _withRetry(() async {
+      final res = await _post(
+        Uri.parse('${ApiConfig.baseUrl}/api/points/earn'),
+        headers: _headers,
+        body: jsonEncode({
+          'action': action,
+          if (idempotentKey != null) 'idempotent_key': idempotentKey,
+          if (contentId != null) 'content_id': contentId,
+        }),
+      );
+      return _parse(res);
+    });
   }
 
   Future<Map<String, dynamic>> earnMathQuiz(String quizId) async {
+    return earnMathQuizQuestion(quizId);
+  }
+
+  Future<Map<String, dynamic>> earnMathQuizAd(String quizId, int adIndex) {
     return earn(
-      action: 'math_quiz',
-      idempotentKey: 'math_quiz_$quizId',
-      contentId: quizId,
+      action: 'watch_video',
+      idempotentKey: 'math_${quizId}_ad_$adIndex',
+      contentId: 'math_${quizId}_ad_$adIndex',
+    );
+  }
+
+  Future<Map<String, dynamic>> earnMathQuizQuestion(String quizId) {
+    return earn(
+      action: 'watch_video',
+      idempotentKey: 'math_${quizId}_q',
+      contentId: 'math_${quizId}_q',
     );
   }
 
   Future<Map<String, dynamic>> earnSurvey(String surveyId) async {
+    return earnSurveyQuestion(surveyId);
+  }
+
+  /// +1 for a completed survey ad. Uses live 1-point watch_video rule.
+  Future<Map<String, dynamic>> earnSurveyAd(String surveyId, int adIndex) {
     return earn(
-      action: 'survey',
-      idempotentKey: 'survey_$surveyId',
-      contentId: surveyId,
+      action: 'watch_video',
+      idempotentKey: 'survey_${surveyId}_ad_$adIndex',
+      contentId: 'survey_${surveyId}_ad_$adIndex',
+    );
+  }
+
+  /// +1 for a correct survey question.
+  Future<Map<String, dynamic>> earnSurveyQuestion(String surveyId) {
+    return earn(
+      action: 'watch_video',
+      idempotentKey: 'survey_${surveyId}_q',
+      contentId: 'survey_${surveyId}_q',
+    );
+  }
+
+  Future<Map<String, dynamic>> earnTttAd(String matchId, int adIndex) {
+    return earn(
+      action: 'watch_video',
+      idempotentKey: 'ttt_${matchId}_ad_$adIndex',
+      contentId: 'ttt_${matchId}_ad_$adIndex',
     );
   }
 
@@ -168,19 +234,27 @@ class ApiClient {
     });
   }
 
-  Future<Map<String, dynamic>> earnWatchVideo(String videoId) async {
+  Future<Map<String, dynamic>> earnWatchClip(String videoId) {
     return earn(
       action: 'watch_video',
-      idempotentKey: 'watch_video_$videoId',
-      contentId: videoId,
+      idempotentKey: 'watch_video_${videoId}_clip',
+      contentId: '${videoId}_clip',
     );
   }
 
+  Future<Map<String, dynamic>> earnWatchVideo(String videoId) async {
+    return earnWatchClip(videoId);
+  }
+
   Future<Map<String, dynamic>> earnWatchVideoBonus(String videoId) async {
+    return earnWatchAd(videoId, 2);
+  }
+
+  Future<Map<String, dynamic>> earnWatchAd(String videoId, int adIndex) async {
     return earn(
-      action: 'watch_video_bonus',
-      idempotentKey: 'watch_video_bonus_$videoId',
-      contentId: videoId,
+      action: 'watch_video',
+      idempotentKey: 'watch_video_${videoId}_$adIndex',
+      contentId: '${videoId}_$adIndex',
     );
   }
 
@@ -520,6 +594,17 @@ String apiErrorMessage(String error) {
     'REGION_BLOCKED' =>
       'This app is not available from Myanmar network locations. Please connect a VPN and try again.',
     'INVALID_CREDENTIALS' => 'Invalid email or password.',
+    'INVALID_OTP' => 'Invalid or expired code. Please request a new one.',
+    'OTP_RATE_LIMIT' => 'Too many reset requests. Try again later.',
+    'OTP_COOLDOWN' => 'Please wait a minute before requesting another code.',
+    'OTP_LOCKED' => 'Too many wrong codes. Request a new one later.',
+    'MAIL_NOT_CONFIGURED' =>
+      'Password reset email is not set up on the server yet.',
+    'MAIL_AUTH_FAILED' =>
+      'Mail login failed. Use a Gmail App Password with no spaces.',
+    'MAIL_CONNECTION_FAILED' =>
+      'Could not reach the mail server. Use port 465 (smtps) on Railway.',
+    'MAIL_FAILED' => 'Could not send the code. Please try again later.',
     'VALIDATION_ERROR' => 'Please check your input and try again.',
     'API_NOT_FOUND_CHECK_URL' =>
       'API URL is wrong. Copy the exact domain from Railway → lotaya-shwe-oh → Settings → Networking.',

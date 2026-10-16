@@ -126,15 +126,16 @@ class AuthController extends Controller
                 ['token' => Hash::make($otp), 'created_at' => now()],
             );
             Cache::put('otp_attempts:'.$email, 0, now()->addMinutes(15));
-            Cache::put('forgot_cd:'.$email, true, now()->addSeconds(60));
 
             try {
                 Mail::to($email)->send(new PasswordResetOtpMail($user->name, $otp));
             } catch (\Throwable $e) {
                 report($e);
 
-                return response()->json(['error' => 'MAIL_FAILED'], 503);
+                return response()->json(['error' => self::mailErrorCode($e)], 503);
             }
+
+            Cache::put('forgot_cd:'.$email, true, now()->addSeconds(60));
         }
 
         return response()->json([
@@ -225,5 +226,23 @@ class AuthController extends Controller
             'ok' => true,
             'message' => 'Account and associated data deleted.',
         ]);
+    }
+
+    private static function mailErrorCode(\Throwable $e): string
+    {
+        $message = strtolower($e->getMessage());
+        if (str_contains($message, '535')
+            || str_contains($message, '534')
+            || str_contains($message, 'authentica')
+            || str_contains($message, 'username and password')) {
+            return 'MAIL_AUTH_FAILED';
+        }
+        if (str_contains($message, 'timed out')
+            || str_contains($message, 'connection')
+            || str_contains($message, 'network is unreachable')) {
+            return 'MAIL_CONNECTION_FAILED';
+        }
+
+        return 'MAIL_FAILED';
     }
 }
