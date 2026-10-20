@@ -26,7 +26,7 @@ class WatchVideoPlayerScreen extends StatefulWidget {
 
 class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
   static const _watchSeconds = 3;
-  static const _adCount = 2;
+  static const _adCount = 1;
 
   late int _index;
   Timer? _timer;
@@ -86,21 +86,25 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
     });
   }
 
-  /// Returns true only when the server accepted (or already had) the earn.
-  Future<bool> _claimNow(
+  /// Returns (ok, newlyEarned). Duplicate = already claimed for this account.
+  Future<(bool ok, bool newlyEarned)> _claimNow(
     Future<Map<String, dynamic>> Function() earn,
     String okText,
   ) async {
     try {
       final result = await earn();
-      if (result['duplicate'] != true) _toast(okText);
-      return true;
+      final duplicate = result['duplicate'] == true;
+      if (!duplicate) {
+        _toast(okText);
+        return (true, true);
+      }
+      return (true, false);
     } on ApiException catch (e) {
       _toast(apiErrorMessage(e.error));
-      return false;
+      return (false, false);
     } catch (_) {
       _toast(apiErrorMessage('NETWORK_ERROR'));
-      return false;
+      return (false, false);
     }
   }
 
@@ -121,7 +125,7 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
 
     for (var i = _adsClaimed; i < _adCount; i++) {
       if (!mounted) return;
-      setState(() => _message = 'Watch ad ${i + 1} of 2...');
+      setState(() => _message = 'Watch ad...');
       AdService.instance.preloadRewarded();
       final rewarded = await AdService.instance.showRewarded(
         onAdNotReady: () =>
@@ -131,13 +135,13 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
       if (!rewarded) {
         setState(() {
           _watchingAd = false;
-          _message = 'Watch both ads until the end. Skip = 0 points.';
+          _message = 'Watch the ad until the end. Skip = 0 points.';
         });
         return;
       }
-      final ok = await _claimNow(
+      final (ok, _) = await _claimNow(
         () => widget.api.earnWatchAd(_id, i + 1),
-        'Ad ${i + 1}: +1 point',
+        'Ad: +1 point',
       );
       if (!ok) {
         if (!mounted) return;
@@ -151,7 +155,7 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
       AdService.instance.preloadRewarded();
     }
 
-    final clipOk = await _claimNow(
+    final (clipOk, clipNew) = await _claimNow(
       () => widget.api.earnWatchClip(_id),
       'Picture: +1 point',
     );
@@ -169,11 +173,12 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
     setState(() {
       _watchingAd = false;
       _passed = true;
-      _message = 'Passed! +1 picture, +2 ads';
+      _message = clipNew
+          ? 'Passed! +1 picture, +1 ad'
+          : 'Already claimed for this account.';
     });
-    // Let the next rewarded ads refill before the next clip auto-starts.
     AdService.instance.preloadRewarded();
-    await Future<void>.delayed(const Duration(milliseconds: 900));
+    await Future<void>.delayed(const Duration(milliseconds: 600));
     if (!mounted) return;
     _openNext();
   }
@@ -249,7 +254,7 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
                       : _watchingAd
                           ? (_message ?? 'Watching ads...')
                           : (_message ??
-                              'Keep watching — $remaining seconds left, then 2 ads'),
+                              'Keep watching — $remaining seconds left, then 1 ad'),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: _passed
@@ -266,10 +271,8 @@ class _WatchVideoPlayerScreenState extends State<WatchVideoPlayerScreen> {
                       onPressed: _watchAdsAndClaim,
                       child: Text(
                         _adsClaimed == 0
-                            ? 'Watch 2 ads (+1 each)'
-                            : _adsClaimed >= _adCount
-                                ? 'Claim picture +1'
-                                : 'Watch remaining ads (+1 each)',
+                            ? 'Watch 1 ad (+1)'
+                            : 'Claim picture +1',
                       ),
                     ),
                   ),

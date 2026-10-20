@@ -129,7 +129,9 @@ class PointService
     ): array {
         $result = DB::transaction(function () use ($userId, $amount, $type, $referenceId, $idempotentKey) {
             if ($idempotentKey) {
+                // Scope per user — same Watch/Survey key must be earnable by every account.
                 $existing = PointTransaction::query()
+                    ->where('user_id', $userId)
                     ->where('idempotent_key', $idempotentKey)
                     ->first();
 
