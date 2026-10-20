@@ -29,10 +29,11 @@ class PointsController extends Controller
     {
         $user = $request->attributes->get('auth_user');
 
+        // Watch can generate many small earns; keep enough history for claim UI.
         $history = PointTransaction::query()
             ->where('user_id', $user->id)
             ->orderByDesc('id')
-            ->limit(50)
+            ->limit(300)
             ->get(['id', 'amount', 'type', 'reference_id', 'balance_after', 'created_at']);
 
         return response()->json(['history' => $history]);
