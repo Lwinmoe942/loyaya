@@ -103,6 +103,7 @@ class AiService
         }
 
         $existingTx = PointTransaction::query()
+            ->where('user_id', $userId)
             ->where('idempotent_key', $key)
             ->first();
 

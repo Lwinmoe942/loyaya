@@ -43,7 +43,7 @@ class GameService
     {
         $key = 'spin_wheel_'.$userId.'_'.now()->toDateString();
 
-        if ($this->hasIdempotentKey($key)) {
+        if ($this->hasIdempotentKey($userId, $key)) {
             throw new \RuntimeException('ALREADY_PLAYED_TODAY');
         }
 
@@ -177,7 +177,10 @@ class GameService
 
     public function spinPlayedToday(int $userId): bool
     {
-        return $this->hasIdempotentKey('spin_wheel_'.$userId.'_'.now()->toDateString());
+        return $this->hasIdempotentKey(
+            $userId,
+            'spin_wheel_'.$userId.'_'.now()->toDateString(),
+        );
     }
 
     private function cooldownSeconds(int $userId, string $type, int $seconds): int
@@ -216,9 +219,10 @@ class GameService
             : 'easy';
     }
 
-    private function hasIdempotentKey(string $key): bool
+    private function hasIdempotentKey(int $userId, string $key): bool
     {
         return PointTransaction::query()
+            ->where('user_id', $userId)
             ->where('idempotent_key', $key)
             ->exists();
     }
