@@ -55,15 +55,21 @@ class AdminPanelController extends Controller
 
     public function dashboard(Request $request): View
     {
-        $status = $request->query('status', 'pending');
+        // Default to all so approved/rejected requests stay visible after action.
+        $status = $request->query('status', 'all');
+        if (! in_array($status, ['all', 'pending', 'approved', 'rejected'], true)) {
+            $status = 'all';
+        }
         $statusCounts = $this->stats->statusCounts();
 
-        $requests = WithdrawRequest::query()
+        $query = WithdrawRequest::query()
             ->with('user:id,public_id,name,tier')
-            ->where('status', $status)
             ->orderByDesc('id')
-            ->limit(50)
-            ->get();
+            ->limit(100);
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+        $requests = $query->get();
 
         $finance = $this->stats->financeSnapshot();
 
@@ -77,6 +83,11 @@ class AdminPanelController extends Controller
             'userCount' => User::query()->count(),
             'giftCodeCount' => GiftCode::query()->count(),
             'requests' => $requests,
+            'payLabels' => [
+                'kbz' => 'KBZ Pay',
+                'wave' => 'Wave Pay',
+                'true_money' => 'True Money',
+            ],
         ]);
     }
 
@@ -124,7 +135,9 @@ class AdminPanelController extends Controller
 
         $row->update(['status' => 'approved']);
 
-        return back()->with('success', "#{$id} ကို approve လုပ်ပြီးပါပြီ။ KBZ/Wave လွှဲပေးပါ။");
+        return redirect()
+            ->route('admin.dashboard', ['status' => 'all'])
+            ->with('success', "#{$id} ကို approve လုပ်ပြီးပါပြီ။ ငွေလွှဲပေးပါ။");
     }
 
     public function reject(int $id): RedirectResponse
@@ -138,7 +151,9 @@ class AdminPanelController extends Controller
         $this->points->refundWithdrawPoints($row->user_id, $row->points, $row->id);
         $row->update(['status' => 'rejected']);
 
-        return back()->with('success', "#{$id} ကို reject လုပ်ပြီး point ပြန်ပေးပြီးပါပြီ။");
+        return redirect()
+            ->route('admin.dashboard', ['status' => 'all'])
+            ->with('success', "#{$id} ကို reject လုပ်ပြီး point ပြန်ပေးပြီးပါပြီ။");
     }
 
     public function courseApplications(Request $request): View

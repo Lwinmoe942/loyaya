@@ -88,26 +88,36 @@
 
 <div class="card">
     <h2>Withdraw Requests</h2>
-    <p class="lead">Pending တွေကို approve လုပ်ပြီး KBZ/Wave/True Money လွှဲပေးပါ။</p>
+    <p class="lead">ငွေထုတ် တောင်းဆိုမှုများ — Pending ကို approve / reject လုပ်ပါ။ (Courses မဟုတ်ပါ)</p>
+
+    @if (session('success'))
+        <p style="color:#16a34a;font-weight:600;">{{ session('success') }}</p>
+    @endif
+    @if (session('error'))
+        <p style="color:#dc2626;font-weight:600;">{{ session('error') }}</p>
+    @endif
 
     <div class="filter-nav">
-        <a href="{{ route('admin.dashboard', ['status' => 'pending']) }}" @if($status === 'pending') class="is-active" @endif>Pending</a>
-        <a href="{{ route('admin.dashboard', ['status' => 'approved']) }}" @if($status === 'approved') class="is-active" @endif>Approved</a>
-        <a href="{{ route('admin.dashboard', ['status' => 'rejected']) }}" @if($status === 'rejected') class="is-active" @endif>Rejected</a>
+        <a href="{{ route('admin.dashboard', ['status' => 'all']) }}" @if($status === 'all') class="is-active" @endif>All ({{ number_format($statusCounts['total']) }})</a>
+        <a href="{{ route('admin.dashboard', ['status' => 'pending']) }}" @if($status === 'pending') class="is-active" @endif>Pending ({{ number_format($statusCounts['pending']) }})</a>
+        <a href="{{ route('admin.dashboard', ['status' => 'approved']) }}" @if($status === 'approved') class="is-active" @endif>Approved ({{ number_format($statusCounts['approved']) }})</a>
+        <a href="{{ route('admin.dashboard', ['status' => 'rejected']) }}" @if($status === 'rejected') class="is-active" @endif>Rejected ({{ number_format($statusCounts['rejected']) }})</a>
     </div>
 
     @if ($requests->isEmpty())
-        <p style="color:var(--muted);">ဒီ status အတွက် တောင်းဆိုမှု မရှိပါ။</p>
+        <p style="color:var(--muted);">ဒီ status အတွက် တောင်းဆိုမှု မရှိပါ။ <a href="{{ route('admin.dashboard', ['status' => 'all']) }}">All</a> ကို ကြည့်ပါ။</p>
     @else
         <div class="table-wrap">
             <table>
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>User</th>
+                        <th>Order #</th>
+                        <th>User ID</th>
+                        <th>Name</th>
                         <th>Points</th>
                         <th>MMK</th>
-                        <th>Payment</th>
+                        <th>Method</th>
+                        <th>Phone</th>
                         <th>Email</th>
                         <th>Status</th>
                         <th>Action</th>
@@ -116,14 +126,13 @@
                 <tbody>
                     @foreach ($requests as $row)
                         <tr>
-                            <td>{{ $row->id }}</td>
-                            <td>
-                                <strong>{{ $row->user?->public_id }}</strong><br>
-                                <small>{{ $row->user?->name }} ({{ $row->user?->tier }})</small>
-                            </td>
+                            <td>#{{ $row->id }}</td>
+                            <td style="white-space:nowrap;font-weight:700;">{{ $row->user?->public_id ?? '—' }}</td>
+                            <td>{{ $row->user?->name ?? '—' }} <small>({{ ucfirst($row->user?->tier ?? 'bronze') }})</small></td>
                             <td>{{ number_format($row->points) }}</td>
                             <td>{{ number_format($row->mmk_amount) }}</td>
-                            <td>{{ strtoupper($row->payment_method) }}<br><small>{{ $row->payment_phone }}</small></td>
+                            <td>{{ $payLabels[$row->payment_method] ?? strtoupper((string) $row->payment_method) }}</td>
+                            <td>{{ $row->payment_phone }}</td>
                             <td>{{ $row->email }}</td>
                             <td><span class="badge badge-{{ $row->status }}">{{ $row->status }}</span></td>
                             <td>

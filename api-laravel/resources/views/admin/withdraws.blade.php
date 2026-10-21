@@ -7,7 +7,7 @@
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
         <div>
             <h1>Withdraw Requests</h1>
-            <p class="lead">Pending တွေကို approve လုပ်ပြီး KBZ/Wave လွှဲပေးပါ။</p>
+            <p class="lead">ငွေထုတ် တောင်းဆိုမှုများ — Pending ကို approve / reject လုပ်ပါ။ (Courses မဟုတ်ပါ)</p>
         </div>
         <form method="post" action="{{ route('admin.logout') }}">
             @csrf
@@ -15,11 +15,27 @@
         </form>
     </div>
 
+    @php
+        $payLabels = $payLabels ?? [
+            'kbz' => 'KBZ Pay',
+            'wave' => 'Wave Pay',
+            'true_money' => 'True Money',
+        ];
+    @endphp
+
     <div class="nav">
+        <a href="{{ route('admin.withdraws', ['status' => 'all']) }}">All</a>
         <a href="{{ route('admin.withdraws', ['status' => 'pending']) }}">Pending</a>
         <a href="{{ route('admin.withdraws', ['status' => 'approved']) }}">Approved</a>
         <a href="{{ route('admin.withdraws', ['status' => 'rejected']) }}">Rejected</a>
     </div>
+
+    @if (session('success'))
+        <p style="color:#16a34a;font-weight:600;">{{ session('success') }}</p>
+    @endif
+    @if (session('error'))
+        <p style="color:#dc2626;font-weight:600;">{{ session('error') }}</p>
+    @endif
 
     @if ($requests->isEmpty())
         <p style="color:var(--muted);">ဒီ status အတွက် တောင်းဆိုမှု မရှိပါ။</p>
@@ -27,11 +43,13 @@
         <table>
             <thead>
                 <tr>
-                    <th>#</th>
-                    <th>User</th>
+                    <th>Order #</th>
+                    <th>User ID</th>
+                    <th>Name</th>
                     <th>Points</th>
                     <th>MMK</th>
-                    <th>Payment</th>
+                    <th>Method</th>
+                    <th>Phone</th>
                     <th>Email</th>
                     <th>Status</th>
                     <th>Action</th>
@@ -40,14 +58,13 @@
             <tbody>
                 @foreach ($requests as $row)
                     <tr>
-                        <td>{{ $row->id }}</td>
-                        <td>
-                            <strong>{{ $row->user?->public_id }}</strong><br>
-                            <small>{{ $row->user?->name }} ({{ $row->user?->tier }})</small>
-                        </td>
-                        <td>{{ $row->points }}</td>
+                        <td>#{{ $row->id }}</td>
+                        <td style="white-space:nowrap;font-weight:700;">{{ $row->user?->public_id ?? '—' }}</td>
+                        <td>{{ $row->user?->name ?? '—' }} <small>({{ ucfirst($row->user?->tier ?? 'bronze') }})</small></td>
+                        <td>{{ number_format($row->points) }}</td>
                         <td>{{ number_format($row->mmk_amount) }}</td>
-                        <td>{{ strtoupper($row->payment_method) }}<br><small>{{ $row->payment_phone }}</small></td>
+                        <td>{{ $payLabels[$row->payment_method] ?? strtoupper((string) $row->payment_method) }}</td>
+                        <td>{{ $row->payment_phone }}</td>
                         <td>{{ $row->email }}</td>
                         <td><span class="badge badge-{{ $row->status }}">{{ $row->status }}</span></td>
                         <td>
