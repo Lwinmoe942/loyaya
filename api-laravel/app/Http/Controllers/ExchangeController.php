@@ -105,6 +105,7 @@ class ExchangeController extends Controller
             }
 
             $requests = WithdrawRequest::query()
+                ->with('user:id,public_id')
                 ->where('email', $email)
                 ->orderByDesc('id')
                 ->limit(20)

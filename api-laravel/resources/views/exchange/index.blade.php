@@ -258,6 +258,7 @@
                 <thead>
                     <tr>
                         <th>Order #</th>
+                        <th>User ID</th>
                         <th>Points</th>
                         <th>MMK</th>
                         <th>Tier</th>
@@ -270,6 +271,7 @@
                     @foreach ($transactions as $row)
                         <tr>
                             <td>#{{ $row->id }}</td>
+                            <td style="white-space:nowrap;font-weight:600;">{{ $row->user?->public_id ?? '—' }}</td>
                             <td>{{ number_format($row->points) }}</td>
                             <td>{{ number_format($row->mmk_amount) }}</td>
                             <td>{{ ucfirst($row->user?->tier ?? 'bronze') }}</td>

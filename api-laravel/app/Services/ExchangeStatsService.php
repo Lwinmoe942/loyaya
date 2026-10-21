@@ -143,7 +143,7 @@ class ExchangeStatsService
     public function recentTransactions(int $perPage = 15): LengthAwarePaginator
     {
         return WithdrawRequest::query()
-            ->with('user:id,tier')
+            ->with('user:id,public_id,tier')
             ->orderByDesc('id')
             ->paginate($perPage)
             ->withQueryString();
