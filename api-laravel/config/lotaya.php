@@ -33,7 +33,7 @@ return [
         'math_quiz' => ['points' => 2, 'daily' => false],
         'survey' => ['points' => 2, 'daily' => false],
         'watch_video' => ['points' => 1, 'daily' => false],
-        'watch_video_bonus' => ['points' => 2, 'daily' => false],
+        'watch_video_bonus' => ['points' => 1, 'daily' => false],
     ],
 
     // Flat bonus to referrer when a friend successfully links a referral code.
@@ -61,6 +61,23 @@ return [
             static fn (string $ip): string => trim($ip),
             explode(',', (string) env('CPX_ALLOWED_IPS', '')),
         ))),
+    ],
+
+    // Force-update gate. When a new Play release is live, set
+    // APP_MIN_VERSION_CODE (Railway) to that release's versionCode.
+    // Apps below it see a non-dismissible update screen.
+    'app_update' => [
+        'min_version_code' => (int) env('APP_MIN_VERSION_CODE', 7),
+        'latest_version_code' => (int) env('APP_LATEST_VERSION_CODE', 7),
+        'force' => filter_var(env('APP_FORCE_UPDATE', true), FILTER_VALIDATE_BOOL),
+        'play_url' => env(
+            'APP_PLAY_URL',
+            'https://play.google.com/store/apps/details?id=com.loyaya.loyaya',
+        ),
+        'message' => env(
+            'APP_UPDATE_MESSAGE',
+            'A new version is required. Please update Lotaya Shwe Oh from Google Play to continue.',
+        ),
     ],
 
     'region_block' => [

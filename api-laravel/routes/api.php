@@ -19,6 +19,19 @@ use Illuminate\Support\Facades\Route;
 // Public region check (never blocked — app needs this while VPN is off).
 Route::get('/region', [RegionController::class, 'show']);
 
+// Public force-update check (must work before login / region gate).
+Route::get('/app-version', function () {
+    $cfg = config('lotaya.app_update', []);
+
+    return response()->json([
+        'min_version_code' => (int) ($cfg['min_version_code'] ?? 0),
+        'latest_version_code' => (int) ($cfg['latest_version_code'] ?? 0),
+        'force' => (bool) ($cfg['force'] ?? false),
+        'play_url' => (string) ($cfg['play_url'] ?? ''),
+        'message' => (string) ($cfg['message'] ?? ''),
+    ]);
+});
+
 Route::middleware('region.block')->group(function () {
     Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
