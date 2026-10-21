@@ -7,6 +7,34 @@
     <h2>Overview</h2>
     <p class="lead">Users: <strong>{{ number_format($userCount) }}</strong> · Gift codes: <strong>{{ number_format($giftCodeCount) }}</strong></p>
 
+    <p class="lead" style="margin-bottom:8px;">ငွေစာရင်း (Points ↔ MMK)</p>
+    <div class="status-row">
+        <div class="status-pill s-total">
+            {{ number_format($finance['outstanding_points'] ?? 0) }}
+            <small>Users Total Points (လက်ရှိ)</small>
+        </div>
+        <div class="status-pill s-approved">
+            {{ number_format($finance['points_earned'] ?? 0) }}
+            <small>Points Ever Earned</small>
+        </div>
+        <div class="status-pill s-mmk">
+            {{ number_format($finance['approved_mmk'] ?? $totalApprovedMmk) }}
+            <small>MMK Paid Out (ထုတ်ပြီး)</small>
+        </div>
+        <div class="status-pill s-pending">
+            {{ number_format($finance['pending_mmk'] ?? 0) }}
+            <small>MMK Pending</small>
+        </div>
+        <div class="status-pill s-rejected">
+            {{ number_format($finance['estimated_liability_mmk'] ?? 0) }}
+            <small>Est. MMK if all cashed</small>
+        </div>
+    </div>
+    <p style="color:var(--muted);font-size:0.85rem;margin-top:0;">
+        Paid out = approve လုပ်ပြီးသား။ Est. MMK = user အားလုံးရဲ့ လက်ကျန် point × သူတို့ tier rate။
+        AdMob ဝင်ငွေ − MMK Paid − Pending ≈ အမြတ် ခန့်မှန်း။
+    </p>
+
     <div class="status-row">
         <div class="status-pill s-total">
             {{ number_format($statusCounts['total']) }}
@@ -25,8 +53,8 @@
             <small>Rejected</small>
         </div>
         <div class="status-pill s-mmk">
-            {{ number_format($totalApprovedMmk) }}
-            <small>Total MMK Paid</small>
+            {{ number_format($finance['approved_points'] ?? 0) }}
+            <small>Points Withdrawn</small>
         </div>
     </div>
 

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\PointTransaction;
 use App\Models\User;
 use App\Models\WithdrawRequest;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -31,6 +32,76 @@ class ExchangeStatsService
         return (int) WithdrawRequest::query()
             ->where('status', 'approved')
             ->sum('mmk_amount');
+    }
+
+    public function totalPendingMmk(): int
+    {
+        return (int) WithdrawRequest::query()
+            ->where('status', 'pending')
+            ->sum('mmk_amount');
+    }
+
+    /** Sum of every user's current point balance (outstanding liability in points). */
+    public function totalOutstandingPoints(): int
+    {
+        return (int) PointTransaction::query()->sum('amount');
+    }
+
+    /** Lifetime points credited (positive ledger rows only). */
+    public function totalPointsEarned(): int
+    {
+        return (int) PointTransaction::query()
+            ->where('amount', '>', 0)
+            ->sum('amount');
+    }
+
+    /** Points already locked/paid via approved withdraws. */
+    public function totalApprovedPoints(): int
+    {
+        return (int) WithdrawRequest::query()
+            ->where('status', 'approved')
+            ->sum('points');
+    }
+
+    /**
+     * Estimated MMK if every outstanding balance were cashed at each user's tier rate.
+     *
+     * @return array{
+     *   outstanding_points: int,
+     *   points_earned: int,
+     *   approved_points: int,
+     *   approved_mmk: int,
+     *   pending_mmk: int,
+     *   estimated_liability_mmk: int
+     * }
+     */
+    public function financeSnapshot(): array
+    {
+        $rates = config('lotaya.rates', []);
+        $balances = DB::table('users')
+            ->leftJoin('point_transactions', 'point_transactions.user_id', '=', 'users.id')
+            ->groupBy('users.id', 'users.tier')
+            ->select([
+                'users.tier',
+                DB::raw('COALESCE(SUM(point_transactions.amount), 0) as balance'),
+            ])
+            ->get();
+
+        $liability = 0;
+        foreach ($balances as $row) {
+            $bal = max(0, (int) $row->balance);
+            $rate = (int) ($rates[$row->tier] ?? $rates['bronze'] ?? 3);
+            $liability += $bal * $rate;
+        }
+
+        return [
+            'outstanding_points' => $this->totalOutstandingPoints(),
+            'points_earned' => $this->totalPointsEarned(),
+            'approved_points' => $this->totalApprovedPoints(),
+            'approved_mmk' => $this->totalApprovedMmk(),
+            'pending_mmk' => $this->totalPendingMmk(),
+            'estimated_liability_mmk' => $liability,
+        ];
     }
 
     /** @return array<string, int> */

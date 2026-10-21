@@ -65,10 +65,13 @@ class AdminPanelController extends Controller
             ->limit(50)
             ->get();
 
+        $finance = $this->stats->financeSnapshot();
+
         return view('admin.dashboard', [
             'status' => $status,
             'statusCounts' => $statusCounts,
-            'totalApprovedMmk' => $this->stats->totalApprovedMmk(),
+            'totalApprovedMmk' => $finance['approved_mmk'],
+            'finance' => $finance,
             'paymentTotals' => $this->stats->approvedMmkByPaymentMethod(),
             'tierCards' => $this->stats->tierCards(),
             'userCount' => User::query()->count(),
