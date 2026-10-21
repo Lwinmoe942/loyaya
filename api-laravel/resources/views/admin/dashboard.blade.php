@@ -7,32 +7,32 @@
     <h2>Overview</h2>
     <p class="lead">Users: <strong>{{ number_format($userCount) }}</strong> · Gift codes: <strong>{{ number_format($giftCodeCount) }}</strong></p>
 
-    <p class="lead" style="margin-bottom:8px;">ငွေစာရင်း (Points ↔ MMK)</p>
+    <p class="lead" style="margin-bottom:8px;">User အားလုံး Points + ပေးရမည့် ငွေ</p>
     <div class="status-row">
         <div class="status-pill s-total">
             {{ number_format($finance['outstanding_points'] ?? 0) }}
-            <small>Users Total Points (လက်ရှိ)</small>
-        </div>
-        <div class="status-pill s-approved">
-            {{ number_format($finance['points_earned'] ?? 0) }}
-            <small>Points Ever Earned</small>
+            <small>စုစုပေါင်း Points<br>(user အားလုံး လက်ကျန်)</small>
         </div>
         <div class="status-pill s-mmk">
+            {{ number_format($finance['estimated_liability_mmk'] ?? 0) }}
+            <small>ပေးရမည့် ခန့်မှန်း MMK<br>(စု points × tier rate)</small>
+        </div>
+        <div class="status-pill s-approved">
             {{ number_format($finance['approved_mmk'] ?? $totalApprovedMmk) }}
-            <small>MMK Paid Out (ထုတ်ပြီး)</small>
+            <small>ထုတ်ပေးပြီးသား MMK</small>
         </div>
         <div class="status-pill s-pending">
             {{ number_format($finance['pending_mmk'] ?? 0) }}
-            <small>MMK Pending</small>
+            <small>စောင့်ဆိုင်း MMK</small>
         </div>
         <div class="status-pill s-rejected">
-            {{ number_format($finance['estimated_liability_mmk'] ?? 0) }}
-            <small>Est. MMK if all cashed</small>
+            {{ number_format($finance['points_earned'] ?? 0) }}
+            <small>ရဖူးသမျှ Points စု</small>
         </div>
     </div>
     <p style="color:var(--muted);font-size:0.85rem;margin-top:0;">
-        Paid out = approve လုပ်ပြီးသား။ Est. MMK = user အားလုံးရဲ့ လက်ကျန် point × သူတို့ tier rate။
-        AdMob ဝင်ငွေ − MMK Paid − Pending ≈ အမြတ် ခန့်မှန်း။
+        ဥပမာ — user အားလုံး လက်ကျန် 1,500 pts ဆိုရင် rate 3 MMK နဲ့ ≈ 4,500 MMK ပေးရမယ်။
+        အပေါ်က “ပေးရမည့် ခန့်မှန်း MMK” က user တိုင်းရဲ့ tier rate (3 သို့ 4) နဲ့ သီးခြားတွက်ထားတာ။
     </p>
 
     <div class="status-row">
