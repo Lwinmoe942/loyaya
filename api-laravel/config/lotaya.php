@@ -36,6 +36,14 @@ return [
         'watch_video_bonus' => ['points' => 1, 'daily' => false],
     ],
 
+    // Stop Watch farming (~1 pt/sec). One round = 3 earns (picture + 2 ads).
+    // Allow one full round per window; soft hourly cap for overnight abuse.
+    'watch_rate' => [
+        'window_seconds' => (int) env('WATCH_RATE_WINDOW_SECONDS', 25),
+        'max_in_window' => (int) env('WATCH_RATE_MAX_IN_WINDOW', 3),
+        'hour_max' => (int) env('WATCH_RATE_HOUR_MAX', 180),
+    ],
+
     // Flat bonus to referrer when a friend successfully links a referral code.
     'referral_signup_bonus' => (int) env('REFERRAL_SIGNUP_BONUS', 10),
     // Percent of each referred friend's earn_* points paid to the referrer (min 1 when earn > 0).

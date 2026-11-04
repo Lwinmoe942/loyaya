@@ -84,6 +84,40 @@ class PointService
         return $result;
     }
 
+    /**
+     * Cap Watch earns so unique attempt keys cannot farm ~1 point/second.
+     * Must run inside the same DB transaction as the insert (row lock).
+     */
+    private function assertWatchRateLimitLocked(int $userId): void
+    {
+        $cfg = config('lotaya.watch_rate', []);
+        $windowSeconds = max(5, (int) ($cfg['window_seconds'] ?? 25));
+        $maxInWindow = max(1, (int) ($cfg['max_in_window'] ?? 3));
+        $hourMax = max($maxInWindow, (int) ($cfg['hour_max'] ?? 180));
+
+        User::query()->whereKey($userId)->lockForUpdate()->first();
+
+        $inWindow = PointTransaction::query()
+            ->where('user_id', $userId)
+            ->where('type', 'earn_watch_video')
+            ->where('created_at', '>=', now()->subSeconds($windowSeconds))
+            ->count();
+
+        if ($inWindow >= $maxInWindow) {
+            throw new \RuntimeException('WATCH_RATE_LIMIT');
+        }
+
+        $inHour = PointTransaction::query()
+            ->where('user_id', $userId)
+            ->where('type', 'earn_watch_video')
+            ->where('created_at', '>=', now()->subHour())
+            ->count();
+
+        if ($inHour >= $hourMax) {
+            throw new \RuntimeException('WATCH_HOURLY_LIMIT');
+        }
+    }
+
     public function lockWithdrawPoints(int $userId, int $points, int $withdrawId): array
     {
         return $this->addTransaction(
@@ -141,6 +175,10 @@ class PointService
                         'balance' => $this->getBalance($userId),
                     ];
                 }
+            }
+
+            if ($type === 'earn_watch_video' || $type === 'earn_watch_video_bonus') {
+                $this->assertWatchRateLimitLocked($userId);
             }
 
             $balance = $this->getBalance($userId);

@@ -61,6 +61,8 @@ class PointsController extends Controller
                 'INVALID_ACTION' => 400,
                 'ALREADY_CLAIMED_TODAY' => 409,
                 'LOCKED_TRY_TOMORROW' => 423,
+                'WATCH_RATE_LIMIT' => 429,
+                'WATCH_HOURLY_LIMIT' => 429,
             ];
 
             return response()->json(

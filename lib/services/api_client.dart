@@ -34,6 +34,15 @@ class ApiClient {
     }
   }
 
+  /// Public force-update config from the server.
+  Future<Map<String, dynamic>> appVersion() async {
+    final res = await _get(
+      Uri.parse('${ApiConfig.baseUrl}/api/app-version'),
+      headers: const {'Accept': 'application/json'},
+    );
+    return _parse(res);
+  }
+
   /// Public region gate. Myanmar IP is blocked unless the user is on a VPN
   /// that exits outside Myanmar.
   Future<Map<String, dynamic>> checkRegion() async {
@@ -234,27 +243,42 @@ class ApiClient {
     });
   }
 
-  Future<Map<String, dynamic>> earnWatchClip(String videoId) {
+  /// Watch picture +1. [attemptId] makes each full watch earnable again.
+  Future<Map<String, dynamic>> earnWatchClip(
+    String videoId, {
+    required String attemptId,
+  }) {
     return earn(
       action: 'watch_video',
-      idempotentKey: 'watch_video_${videoId}_clip',
-      contentId: '${videoId}_clip',
+      idempotentKey: 'w_${videoId}_c_$attemptId',
+      contentId: '${videoId}_clip_$attemptId',
     );
   }
 
-  Future<Map<String, dynamic>> earnWatchVideo(String videoId) async {
-    return earnWatchClip(videoId);
+  Future<Map<String, dynamic>> earnWatchVideo(
+    String videoId, {
+    required String attemptId,
+  }) async {
+    return earnWatchClip(videoId, attemptId: attemptId);
   }
 
-  Future<Map<String, dynamic>> earnWatchVideoBonus(String videoId) async {
-    return earnWatchAd(videoId, 2);
+  Future<Map<String, dynamic>> earnWatchVideoBonus(
+    String videoId, {
+    required String attemptId,
+  }) async {
+    return earnWatchAd(videoId, 2, attemptId: attemptId);
   }
 
-  Future<Map<String, dynamic>> earnWatchAd(String videoId, int adIndex) async {
+  /// Watch ad +1. Same [attemptId] as the picture claim for that round.
+  Future<Map<String, dynamic>> earnWatchAd(
+    String videoId,
+    int adIndex, {
+    required String attemptId,
+  }) async {
     return earn(
       action: 'watch_video',
-      idempotentKey: 'watch_video_${videoId}_$adIndex',
-      contentId: '${videoId}_$adIndex',
+      idempotentKey: 'w_${videoId}_a${adIndex}_$attemptId',
+      contentId: '${videoId}_${adIndex}_$attemptId',
     );
   }
 
@@ -586,6 +610,10 @@ String apiErrorMessage(String error) {
     'SELF_REFERRAL' => 'You cannot use your own referral code.',
     'DAILY_LIMIT' => 'Daily win limit reached. Try again tomorrow.',
     'ALREADY_CLAIMED' => 'Points for this match were already claimed.',
+    'WATCH_RATE_LIMIT' =>
+        'Watch points too fast. Finish both ads, then wait a few seconds.',
+    'WATCH_HOURLY_LIMIT' =>
+        'Watch point limit for this hour. Try again later.',
     'INVALID_MATCH' => 'Invalid game session. Please start a new match.',
     'INVALID_ACTION' => 'This reward is not available on the server yet.',
     'CPX_NOT_CONFIGURED' =>
