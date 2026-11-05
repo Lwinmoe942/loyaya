@@ -202,14 +202,7 @@ class _ReferralScreenState extends State<ReferralScreen> {
                           icon: Icons.card_giftcard,
                           text: 'Earn ',
                           highlight: '+10 points',
-                          suffix: ' when a friend joins with your code',
-                        ),
-                        const Divider(height: 24),
-                        _BenefitRow(
-                          icon: Icons.percent,
-                          text: 'Plus ',
-                          highlight: '10%',
-                          suffix: ' of points your referred friend earns',
+                          suffix: ' once when a friend joins with your code',
                         ),
                       ],
                     ),
@@ -219,16 +212,15 @@ class _ReferralScreenState extends State<ReferralScreen> {
                     title: 'How Referral Works',
                     body:
                         'Invite your friends to join Lotaya Shwe Oh using your referral link or referral code. '
-                        'When a friend successfully applies your code, you get +10 points. '
-                        'When they earn points in the app, you also get 10% of those points (at least 1 point per earn).',
+                        'When a friend successfully applies your code, you get +10 points one time only. '
+                        'You do not earn extra points from their later activity.',
                   ),
                   const SizedBox(height: 12),
                   const _InfoCard(
                     title: 'Referral Benefits',
                     bullets: [
-                      '+10 points when a friend joins with your referral code',
-                      'You earn 10% of the points your referred friend earns (minimum 1 per earn)',
-                      'The more active your referred friends are, the more bonus points you receive',
+                      '+10 points once when a friend joins with your referral code',
+                      'No ongoing bonus from friends’ later points',
                       'Invite more friends to climb higher on the referral leaderboard',
                     ],
                   ),
