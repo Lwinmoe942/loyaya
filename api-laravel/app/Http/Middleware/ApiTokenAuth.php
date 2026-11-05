@@ -31,9 +31,10 @@ class ApiTokenAuth
             return response()->json(['error' => 'DEVICE_REQUIRED'], 400);
         }
 
-        // Bind first device for legacy accounts; reject any other phone after that.
+        // Soft mode until Play update: old apps omit X-Device-Id and must keep working.
+        // Enforce mismatch only when the client actually sends a device id.
         if ($user->device_id) {
-            if ($deviceId === '' || ! hash_equals((string) $user->device_id, $deviceId)) {
+            if ($deviceId !== '' && ! hash_equals((string) $user->device_id, $deviceId)) {
                 return response()->json(['error' => 'DEVICE_MISMATCH'], 403);
             }
         } elseif ($deviceId !== '') {

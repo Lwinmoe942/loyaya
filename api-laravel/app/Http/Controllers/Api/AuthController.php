@@ -32,7 +32,8 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'min:6'],
             'phone' => ['nullable', 'string', 'max:30'],
             'referral_code' => ['nullable', 'string', 'max:12'],
-            'device_id' => ['required', 'string', 'min:8', 'max:80'],
+            // Optional until Play update ships device binding; required by new app clients.
+            'device_id' => ['nullable', 'string', 'min:8', 'max:80'],
         ]);
 
         $email = strtolower(trim($data['email']));
@@ -47,6 +48,7 @@ class AuthController extends Controller
             ], 409);
         }
 
+        $deviceId = isset($data['device_id']) ? trim((string) $data['device_id']) : '';
         $token = PublicId::token();
         $user = User::query()->create([
             'public_id' => PublicId::generate(),
@@ -56,8 +58,8 @@ class AuthController extends Controller
             'phone' => $data['phone'] ?? null,
             'tier' => 'bronze',
             'api_token' => $token,
-            'device_id' => $data['device_id'],
-            'device_bound_at' => now(),
+            'device_id' => $deviceId !== '' ? $deviceId : null,
+            'device_bound_at' => $deviceId !== '' ? now() : null,
         ]);
 
         if (! empty($data['referral_code'] ?? null)) {
@@ -82,7 +84,7 @@ class AuthController extends Controller
         $data = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
-            'device_id' => ['required', 'string', 'min:8', 'max:80'],
+            'device_id' => ['nullable', 'string', 'min:8', 'max:80'],
         ]);
 
         $email = strtolower(trim($data['email']));
@@ -91,16 +93,20 @@ class AuthController extends Controller
             return response()->json(['error' => 'INVALID_CREDENTIALS'], 401);
         }
 
-        if ($user->device_id && ! hash_equals((string) $user->device_id, $data['device_id'])) {
+        $deviceId = isset($data['device_id']) ? trim((string) $data['device_id']) : '';
+
+        // Enforce only when both sides have a device id (new app). Old Play builds omit it.
+        if ($user->device_id && $deviceId !== '' && ! hash_equals((string) $user->device_id, $deviceId)) {
             return response()->json(['error' => 'DEVICE_MISMATCH'], 403);
         }
 
         $token = PublicId::token();
-        $user->update([
-            'api_token' => $token,
-            'device_id' => $user->device_id ?: $data['device_id'],
-            'device_bound_at' => $user->device_bound_at ?: now(),
-        ]);
+        $updates = ['api_token' => $token];
+        if ($deviceId !== '' && ! $user->device_id) {
+            $updates['device_id'] = $deviceId;
+            $updates['device_bound_at'] = now();
+        }
+        $user->update($updates);
 
         return response()->json([
             'user' => $this->presenter->format($user->fresh()),
@@ -166,7 +172,7 @@ class AuthController extends Controller
             'email' => ['required', 'email'],
             'otp' => ['required', 'string', 'size:6'],
             'password' => ['required', 'string', 'min:6'],
-            'device_id' => ['required', 'string', 'min:8', 'max:80'],
+            'device_id' => ['nullable', 'string', 'min:8', 'max:80'],
         ]);
         $email = strtolower(trim($data['email']));
         $otp = preg_replace('/\D+/', '', $data['otp']) ?? '';
@@ -195,14 +201,18 @@ class AuthController extends Controller
             return response()->json(['error' => 'INVALID_OTP'], 400);
         }
 
-        // OTP proves ownership — allow moving the account to this phone only.
+        // OTP proves ownership — rebind when new app sends device_id.
+        $deviceId = isset($data['device_id']) ? trim((string) $data['device_id']) : '';
         $token = PublicId::token();
-        $user->update([
+        $updates = [
             'password' => $data['password'],
             'api_token' => $token,
-            'device_id' => $data['device_id'],
-            'device_bound_at' => now(),
-        ]);
+        ];
+        if ($deviceId !== '') {
+            $updates['device_id'] = $deviceId;
+            $updates['device_bound_at'] = now();
+        }
+        $user->update($updates);
 
         DB::table('password_reset_tokens')->where('email', $email)->delete();
         Cache::forget('otp_attempts:'.$email);
