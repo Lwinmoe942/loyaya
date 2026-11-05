@@ -145,13 +145,25 @@ class ReferralService
         $this->awardSignupBonus($earner);
 
         $percent = (float) config('lotaya.referral_earn_percent', 10);
+        // True percent only — do NOT force +1 on every friend +1 (that became ~1 pt/sec farms).
         $bonus = (int) floor($earnedPoints * ($percent / 100));
-        // Small earns (1–9 pts) used to yield 0; always pay at least 1 when friend earns.
         if ($bonus < 1) {
-            $bonus = 1;
+            return;
         }
 
         $referrerId = (int) $earner->referred_by_user_id;
+
+        // Cap referral flood from many farming alts.
+        $hourMax = (int) config('lotaya.referral_hour_max', 60);
+        $recent = \App\Models\PointTransaction::query()
+            ->where('user_id', $referrerId)
+            ->where('type', 'referral_bonus')
+            ->where('created_at', '>=', now()->subHour())
+            ->count();
+        if ($recent >= $hourMax) {
+            return;
+        }
+
         $key = "referral_bonus_{$referrerId}_{$sourceKey}";
 
         app(PointService::class)->addTransaction(
