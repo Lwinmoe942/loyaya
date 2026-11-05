@@ -26,9 +26,26 @@ class ApiTokenAuth
             return response()->json(['error' => 'UNAUTHORIZED'], 401);
         }
 
-        $request->attributes->set('auth_user', $user);
+        $deviceId = trim((string) $request->header('X-Device-Id', ''));
+        if ($deviceId !== '' && (strlen($deviceId) < 8 || strlen($deviceId) > 80)) {
+            return response()->json(['error' => 'DEVICE_REQUIRED'], 400);
+        }
+
+        // Bind first device for legacy accounts; reject any other phone after that.
+        if ($user->device_id) {
+            if ($deviceId === '' || ! hash_equals((string) $user->device_id, $deviceId)) {
+                return response()->json(['error' => 'DEVICE_MISMATCH'], 403);
+            }
+        } elseif ($deviceId !== '') {
+            $user->forceFill([
+                'device_id' => $deviceId,
+                'device_bound_at' => now(),
+            ])->save();
+        }
+
+        $request->attributes->set('auth_user', $user->fresh());
         $request->attributes->set('auth_token', $token);
-        $request->attributes->set('auth_user_payload', $this->presenter->format($user));
+        $request->attributes->set('auth_user_payload', $this->presenter->format($user->fresh()));
 
         return $next($request);
     }

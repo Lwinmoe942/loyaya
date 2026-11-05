@@ -18,6 +18,8 @@ class User extends Authenticatable
         'phone',
         'tier',
         'api_token',
+        'device_id',
+        'device_bound_at',
         'referral_code',
         'referred_by_user_id',
     ];
@@ -25,6 +27,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'api_token',
+        'device_id',
         'remember_token',
     ];
 
@@ -32,6 +35,7 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
+            'device_bound_at' => 'datetime',
         ];
     }
 

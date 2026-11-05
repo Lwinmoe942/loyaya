@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:loyaya/config/app_version.dart';
 import 'package:loyaya/screens/auth_screen.dart';
+import 'package:loyaya/screens/force_update_screen.dart';
 import 'package:loyaya/screens/region_blocked_screen.dart';
 import 'package:loyaya/screens/shell_screen.dart';
 import 'package:loyaya/services/ad_service.dart';
 import 'package:loyaya/services/api_client.dart';
+import 'package:loyaya/services/device_id_service.dart';
 import 'package:loyaya/services/device_region_service.dart';
 import 'package:loyaya/services/progress_service.dart';
 import 'package:loyaya/services/session_service.dart';
@@ -41,12 +44,17 @@ class _AppRootState extends State<AppRoot> {
   final _session = SessionService();
   final _progress = ProgressService();
   final _deviceRegion = DeviceRegionService();
+  final _deviceIds = DeviceIdService();
   bool _ready = false;
   bool _loggedIn = false;
   bool _regionAllowed = true;
   String? _bootMessage;
   String? _regionMessage;
   String? _regionCountry;
+  bool _forceUpdate = false;
+  String _updateMessage = '';
+  String _playUrl =
+      'https://play.google.com/store/apps/details?id=com.loyaya.loyaya';
 
   @override
   void initState() {
@@ -63,10 +71,25 @@ class _AppRootState extends State<AppRoot> {
       _regionCountry = null;
     });
 
+    final deviceId = await _deviceIds.getOrCreate();
+    _api.setDeviceId(deviceId);
+
     final wakeFuture = _api.wakeServer();
     final token = await _session.loadToken();
 
     await wakeFuture;
+
+    // Force-update gate first — outdated builds must update before use.
+    if (await _checkForceUpdate()) {
+      if (mounted) {
+        setState(() {
+          _ready = true;
+          _bootMessage = null;
+          _loggedIn = false;
+        });
+      }
+      return;
+    }
 
     setState(() => _bootMessage = 'Checking region...');
 
@@ -93,9 +116,15 @@ class _AppRootState extends State<AppRoot> {
           _regionAllowed = false;
           _regionMessage = apiErrorMessage(e.error);
           _loggedIn = false;
-        } else if (e.statusCode == 401) {
+        } else if (e.statusCode == 401 ||
+            e.error == 'DEVICE_MISMATCH' ||
+            e.statusCode == 403) {
           await _session.clear();
           _api.setToken(null);
+          _loggedIn = false;
+          if (e.error == 'DEVICE_MISMATCH') {
+            _bootMessage = apiErrorMessage('DEVICE_MISMATCH');
+          }
         } else {
           _loggedIn = true;
         }
@@ -108,6 +137,24 @@ class _AppRootState extends State<AppRoot> {
         _ready = true;
         _bootMessage = null;
       });
+    }
+  }
+
+  Future<bool> _checkForceUpdate() async {
+    try {
+      final cfg = await _api.appVersion();
+      final minCode = (cfg['min_version_code'] as num?)?.toInt() ?? 0;
+      final force = cfg['force'] == true;
+      _playUrl = cfg['play_url']?.toString().isNotEmpty == true
+          ? cfg['play_url'].toString()
+          : _playUrl;
+      _updateMessage = cfg['message']?.toString() ?? '';
+      _forceUpdate = force && kAppVersionCode < minCode;
+      return _forceUpdate;
+    } catch (_) {
+      // Offline / old server without the endpoint — never block the app.
+      _forceUpdate = false;
+      return false;
     }
   }
 
@@ -219,6 +266,14 @@ class _AppRootState extends State<AppRoot> {
             ],
           ),
         ),
+      );
+    }
+
+    if (_forceUpdate) {
+      return ForceUpdateScreen(
+        message: _updateMessage,
+        playUrl: _playUrl,
+        onRetry: _bootstrap,
       );
     }
 

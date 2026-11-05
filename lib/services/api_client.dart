@@ -11,14 +11,18 @@ class ApiClient {
 
   final http.Client _client;
   String? _token;
+  String? _deviceId;
 
   static const Duration _timeout = Duration(seconds: 90);
 
   void setToken(String? token) => _token = token;
 
+  void setDeviceId(String? deviceId) => _deviceId = deviceId;
+
   Map<String, String> get _headers => {
     'Content-Type': 'application/json',
     if (_token != null) 'Authorization': 'Bearer $_token',
+    if (_deviceId != null && _deviceId!.isNotEmpty) 'X-Device-Id': _deviceId!,
   };
 
   /// Pings the API so Render free tier can wake before sign-up/login.
@@ -68,6 +72,7 @@ class ApiClient {
           'name': name,
           'email': email,
           'password': password,
+          'device_id': _deviceId,
           if (phone != null && phone.isNotEmpty) 'phone': phone,
           if (referralCode != null && referralCode.trim().isNotEmpty)
             'referral_code': referralCode.trim().toUpperCase(),
@@ -85,7 +90,11 @@ class ApiClient {
       final res = await _post(
         Uri.parse('${ApiConfig.baseUrl}/api/auth/login'),
         headers: _headers,
-        body: jsonEncode({'email': email, 'password': password}),
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+          'device_id': _deviceId,
+        }),
       );
       return _parse(res);
     });
@@ -115,6 +124,7 @@ class ApiClient {
           'email': email,
           'otp': otp,
           'password': password,
+          'device_id': _deviceId,
         }),
       );
       return _parse(res);
@@ -614,6 +624,9 @@ String apiErrorMessage(String error) {
         'Watch points too fast. Finish both ads, then wait a few seconds.',
     'WATCH_HOURLY_LIMIT' =>
         'Watch point limit for this hour. Try again later.',
+    'DEVICE_MISMATCH' =>
+        'This account is already linked to another phone. Use that phone, or reset password on this phone to move the account.',
+    'DEVICE_REQUIRED' => 'Device check failed. Please reinstall or update the app.',
     'INVALID_MATCH' => 'Invalid game session. Please start a new match.',
     'INVALID_ACTION' => 'This reward is not available on the server yet.',
     'CPX_NOT_CONFIGURED' =>
