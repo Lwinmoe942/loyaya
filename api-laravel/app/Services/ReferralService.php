@@ -60,7 +60,8 @@ class ReferralService
             'referral_count' => $referralCount,
             'referral_bonus_earned' => $bonusEarned,
             'referral_signup_bonus' => (int) config('lotaya.referral_signup_bonus', 10),
-            'referral_earn_percent' => (float) config('lotaya.referral_earn_percent', 10),
+            // Ongoing earn share disabled — signup bonus only.
+            'referral_earn_percent' => 0,
         ];
     }
 
@@ -130,48 +131,17 @@ class ReferralService
         );
     }
 
+    /**
+     * Friend earn share removed. Keep hook for PointService; only backfill
+     * missing one-time signup bonuses (+10 per new referred account).
+     */
     public function rewardReferrer(int $earnerUserId, int $earnedPoints, string $sourceKey): void
     {
-        if ($earnedPoints <= 0) {
-            return;
-        }
-
         $earner = User::query()->find($earnerUserId);
         if (! $earner?->referred_by_user_id) {
             return;
         }
 
-        // Backfill signup bonus for referrals linked before this feature shipped.
         $this->awardSignupBonus($earner);
-
-        $percent = (float) config('lotaya.referral_earn_percent', 10);
-        // True percent only — do NOT force +1 on every friend +1 (that became ~1 pt/sec farms).
-        $bonus = (int) floor($earnedPoints * ($percent / 100));
-        if ($bonus < 1) {
-            return;
-        }
-
-        $referrerId = (int) $earner->referred_by_user_id;
-
-        // Cap referral flood from many farming alts.
-        $hourMax = (int) config('lotaya.referral_hour_max', 60);
-        $recent = \App\Models\PointTransaction::query()
-            ->where('user_id', $referrerId)
-            ->where('type', 'referral_bonus')
-            ->where('created_at', '>=', now()->subHour())
-            ->count();
-        if ($recent >= $hourMax) {
-            return;
-        }
-
-        $key = "referral_bonus_{$referrerId}_{$sourceKey}";
-
-        app(PointService::class)->addTransaction(
-            $referrerId,
-            $bonus,
-            'referral_bonus',
-            (string) $earnerUserId,
-            $key,
-        );
     }
 }

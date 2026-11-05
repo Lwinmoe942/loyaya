@@ -44,12 +44,10 @@ return [
         'hour_max' => (int) env('WATCH_RATE_HOUR_MAX', 180),
     ],
 
-    // Flat bonus to referrer when a friend successfully links a referral code.
+    // One-time bonus to referrer when a new account applies their code.
     'referral_signup_bonus' => (int) env('REFERRAL_SIGNUP_BONUS', 10),
-    // Percent of friend earn_* points (floor). +1 friend watch no longer pays +1 referrer.
-    'referral_earn_percent' => (float) env('REFERRAL_EARN_PERCENT', 10),
-    // Max referral_bonus transactions per referrer per hour (anti multi-account farm).
-    'referral_hour_max' => (int) env('REFERRAL_HOUR_MAX', 60),
+    // Ongoing % of friend earns — disabled (0). Signup bonus only.
+    'referral_earn_percent' => (float) env('REFERRAL_EARN_PERCENT', 0),
 
     'exchange_url' => env('EXCHANGE_URL', 'http://localhost:8000/exchange'),
     'app_url' => env('APP_URL', 'http://localhost:8000'),
